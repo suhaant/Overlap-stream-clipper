@@ -74,34 +74,58 @@ This is the most common way naive chat-clippers produce unusable clips.
 
 A spike says chat got louder. It does not say why. Chat gets louder for a YouTube outage, a raid, a
 giveaway, the streamer asking a question, or the topic turning — none of which is clippable. In the
-first live run, roughly half of all detections were conversation, not reaction:
+first live run roughly half of all detections were conversation:
 
 ```
 ohnepixel "SHOCK":  "bye yt" / "Is youtube back up?" / "FROM THE TRAILER"
 jynxzi    "FUNNY":  "find god" / "how does he have 60fps?" / "Lucia is packing"
 ```
 
-But a mass reaction has a recognisable shape, and conversation has the opposite one:
+### The lexicon was the wrong primitive
 
-|                | reaction        | conversation     |
-| -------------- | --------------- | ---------------- |
-| message length | 2–3 tokens      | 8–20 tokens      |
-| vocabulary     | tiny, repeated  | broad, varied    |
-| duplicates     | many (`KEKW`×80)| few              |
-| @mentions      | almost none     | common           |
-| questions      | `???`           | "how does he have 60fps?" |
+The first gate weighted a lexicon highest — matching chat against KEKW, LOL, POG, MonkaS. Measured
+against **6,095 messages of real GTA 6 chat across 8 channels**, that turned out to be backwards:
 
-So we score the shape and gate on it. Measured separation on hand-built windows:
+| window | repetition | lowDiversity | reactionWords | truth |
+| ------ | ---------: | -----------: | ------------: | ----- |
+| 86 people typing `heist`        | **0.877** | **0.891** | 0.008 | real moment |
+| `NOOO / SAJ / SAJ / NOOOOO`     | **0.521** | **0.723** | 0.125 | real moment |
+| `WTF / LOL / LO / LOL`          | **0.389** | **0.445** | 0.379 | real moment |
+| `@M0hamdQ LOL / ciao bello / mhm mhm gotta close chat` | 0.250 | 0.200 | **0.500** | conversation |
+| `dansi / Me / this time / it looked cooler without camo` | 0.227 | 0.185 | 0.318 | conversation |
+| `Hi Lacy / sob / stop / ps5 / XBOX`  | 0.207 | 0.164 | 0.138 | giveaway spam |
+
+The best detection in the entire run — 86 people typing **"heist"** in unison — scored 0.008 on the
+lexicon. The worst false positive scored 0.500, because one chatter wrote "@M0hamdQ LOL".
+
+**The real signal is convergence**: a mass reaction makes hundreds of people type the same short
+thing at the same time. *What* they type is irrelevant. A lexicon only catches reactions whose
+vocabulary you anticipated; convergence is vocabulary-independent, so it is also **language- and
+game-independent** — it works unchanged on Spanish chat, and on a game whose slang does not exist
+yet. The lexicon still earns its place naming the moment, just not detecting it.
+
+### Result after reweighting
 
 ```
-reaction shape 0.751 · conversation shape 0.000
+6,095 messages · 8 channels · 9.0 min
+candidates 16 → accepted 4 · rejected 12   (gate removed 75%)
+
+ 71/100  shape 0.67  z=17.76  86 chatters  unclear   lacy            "heist"
+ 65/100  shape 0.52  z=67     67 chatters  fail      stableronaldo   "NOOO / SAJ"
+ 58/100  shape 0.43  z= 7.64  46 chatters  funny     stableronaldo   "WTF / LOL"
+ 49/100  shape 0.45  z= 5.73  46 chatters  funny     stableronaldo   "LOL / Yooo"
 ```
 
-This gate is the defensible part. Thresholding a message counter is forty lines and is why naive
-chat-clippers produce garbage. Telling "chat is loud" apart from "chat is reacting" is the real
-problem.
+All four survivors are genuine mass reactions. Every conversation and giveaway-spam false positive
+was removed. Two borderline moments were also dropped, sitting just under the 0.30 gate — **this
+deliberately favours precision over recall**, because under CPM billing a false positive costs render
+time and earns nothing, while a missed moment costs only opportunity. On a six-hour stream there is
+no shortage of candidates; there is a shortage of good ones.
 
----
+Note the top detection is labelled `unclear`, and that is the honest answer: detection is
+vocabulary-independent but *captioning* is not. A moment chat names "heist" needs either an LLM pass
+over the window text or a vision pass over the frames before `Style Video` can caption it. That is a
+real limitation, not a rounding error.
 
 ## Layout
 

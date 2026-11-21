@@ -31,8 +31,17 @@ export function classify(window) {
   const [topKind, topCount] = ranked[0];
   const total = ranked.reduce((n, [, v]) => n + v, 0);
 
+  /**
+   * Don't let one message name the moment. On real data, 86 people typing "heist"
+   * in unison got labelled `funny` because a single chatter wrote "lol" -- the
+   * lexicon's only hit in a 120-message window. A label needs real support, and
+   * `unclear` is an honest and useful answer: the moment is still clippable, we
+   * just don't get to caption it from vocabulary alone.
+   */
+  const supported = topCount >= 3 && topCount / Math.max(window.length, 1) >= 0.04;
+
   return {
-    kind: topCount === 0 ? 'unclear' : topKind,
+    kind: supported ? topKind : 'unclear',
     confidence: total ? Number((topCount / total).toFixed(2)) : 0,
     clipRequests: hits.clipworthy,
     breakdown: hits,

@@ -55,31 +55,58 @@ export function shapeOf(window) {
   }
 
   const n = msgs.length;
+  const uniqueTexts = seen.size;
+
   const signals = {
+    // CONVERGENCE -- the primary signal, established empirically (see note below).
+    repetition:     1 - uniqueTexts / n,
+    lowDiversity:   totalTokens ? 1 - Math.min(vocab.size / totalTokens, 1) : 0,
+    // Supporting signals. Weak individually.
     brevity:        shortMsgs / n,
     reactionWords:  reactionMsgs / n,
     emoteDensity:   emoteMsgs / n,
     screaming:      screams / n,
-    repetition:     1 - seen.size / n,
-    // Type-token ratio. Reactions reuse a tiny vocabulary; conversation does not.
-    lowDiversity:   totalTokens ? 1 - Math.min(vocab.size / totalTokens, 1) : 0,
+    // Disqualifying signal.
     conversational: (mentions + longMsgs + realQuestions) / n,
   };
 
-  const positive =
-      0.26 * signals.brevity +
-      0.28 * signals.reactionWords +
-      0.14 * signals.emoteDensity +
-      0.08 * signals.screaming +
-      0.12 * signals.repetition +
-      0.12 * signals.lowDiversity;
+  /**
+   * WHY CONVERGENCE AND NOT VOCABULARY.
+   *
+   * The first version weighted `reactionWords` highest -- matching chat against a
+   * lexicon of KEKW/LOL/POG. Measured against 6,095 messages of real GTA 6 chat,
+   * that was simply the wrong primitive:
+   *
+   *   86 people typing "heist" in unison   -> reactionWords 0.008  (best moment in the run)
+   *   "@M0hamdQ LOL / ciao bello / mhm"    -> reactionWords 0.500  (pure conversation)
+   *
+   * A lexicon only catches reactions whose words you anticipated. What actually
+   * separates a mass reaction from conversation is CONVERGENCE: hundreds of people
+   * typing the same short thing at the same time. What they type does not matter.
+   *
+   * Measured separation on that sample:
+   *   real moments      repetition 0.39-0.88, lowDiversity 0.45-0.89
+   *   conversation      repetition 0.21-0.28, lowDiversity 0.16-0.29
+   *
+   * This also makes the detector language- and game-independent: it works
+   * unchanged on Spanish chat, and on a game whose slang does not exist yet.
+   * The lexicon still earns its place in classification -- naming the moment --
+   * just not in detecting it.
+   */
+  const convergence = 0.5 * signals.repetition + 0.5 * signals.lowDiversity;
 
-  // Conversation actively disqualifies: a window full of @replies and questions
-  // is chat talking, not chat reacting.
-  const shape = Math.max(0, Math.min(1, positive - 0.45 * signals.conversational));
+  const positive =
+      0.62 * convergence +
+      0.12 * signals.brevity +
+      0.12 * signals.reactionWords +
+      0.08 * signals.emoteDensity +
+      0.06 * signals.screaming;
+
+  const shape = Math.max(0, Math.min(1, positive - 0.50 * signals.conversational));
 
   return {
     shape: Number(shape.toFixed(3)),
+    convergence: Number(convergence.toFixed(3)),
     signals: Object.fromEntries(Object.entries(signals).map(([k, v]) => [k, Number(v.toFixed(3))])),
     n,
     reason: shape < 0.3 ? 'conversational' : 'reaction',

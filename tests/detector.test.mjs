@@ -12,16 +12,59 @@ import { shapeOf } from '../src/shape.mjs';
  * that divides a long-window unique COUNT by its duration understates the baseline
  * badly, and every ratio computed against it is inflated.
  */
-function steadyChat({ startT, durationMs, poolSize = 250, perWindow = 15, windowMs = 4000 }) {
+const CHATTER_WORDS = (
+  'honestly the driving feels way better than before i think lucia is the stronger ' +
+  'protagonist did anyone else notice the radio stations are actually good this time ' +
+  'how many chapters are there supposed to be does this run at sixty on a base console ' +
+  'my cousin said the map is twice the size what time does the stream usually end ' +
+  'i have not even left the first island yet the water looks unreal on a decent tv'
+).split(' ');
+
+/** Varied conversational text, so vocabulary breadth and duplicate rate look real. */
+function chatterText(rand) {
+  const len = 6 + Math.floor(rand() * 10);
+  const out = [];
+  for (let i = 0; i < len; i++) out.push(CHATTER_WORDS[Math.floor(rand() * CHATTER_WORDS.length)]);
+  return out.join(' ');
+}
+
+/** Deterministic PRNG so a failing test fails the same way twice. */
+function rng(seed = 42) {
+  let x = seed;
+  return () => { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; };
+}
+
+/**
+ * Synthetic chat with REALISTIC uniqueness overlap AND realistic text variety.
+ *
+ * Two properties have to be modelled or the fixture lies to you:
+ *
+ * 1. UNIQUENESS SATURATES. Chat is not a stream of strangers -- a pool of regulars
+ *    talks repeatedly, so a 4s window holds ~15 distinct people while a 240s window
+ *    holds only ~250, far fewer than 60x15. Any method dividing a long-window unique
+ *    COUNT by its duration understates the baseline, and every ratio inflates.
+ *
+ * 2. CONVERSATION IS LEXICALLY VARIED. An earlier version of this fixture gave every
+ *    message identical text, which made "steady conversation" score maximum
+ *    convergence -- indistinguishable from 400 people typing KEKW in unison. The
+ *    fixture, not the detector, was wrong. Idle chat must look idle.
+ */
+function steadyChat({ startT, durationMs, poolSize = 250, perWindow = 15, windowMs = 4000, seed = 7 }) {
+  const rand = rng(seed);
   const msgs = [];
   const pool = Array.from({ length: poolSize }, (_, i) => `u${i}`);
   for (let w = 0; w * windowMs < durationMs; w++) {
     const base = startT + w * windowMs;
     const picked = new Set();
-    while (picked.size < perWindow) picked.add(pool[Math.floor(Math.random() * poolSize)]);
+    while (picked.size < perWindow) picked.add(pool[Math.floor(rand() * poolSize)]);
     for (const user of picked) {
       for (let k = 0; k < 4; k++) {
-        msgs.push({ t: base + Math.floor(Math.random() * windowMs), user, login: user, text: 'talking about the game here', emoteCount: 0 });
+        msgs.push({
+          t: base + Math.floor(rand() * windowMs),
+          user, login: user,
+          text: chatterText(rand),
+          emoteCount: 0,
+        });
       }
     }
   }
