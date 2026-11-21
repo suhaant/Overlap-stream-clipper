@@ -1,0 +1,7 @@
+# Recorded chat: real Twitch logins and message text. Useful locally for tuning,
+# not something to republish. Regenerate with `node record.mjs`.
+data/
+node_modules/
+*.log
+.DS_Store
+clips/
