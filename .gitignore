@@ -1,11 +1,15 @@
-# Recorded chat: real Twitch logins and message text. Useful locally for tuning,
-# not something to republish. Regenerate with `node record.mjs`.
-data/
 node_modules/
-*.log
-.DS_Store
-clips/
+
+# Recorded chat and harvested labels. The dataset is the asset but it does not
+# belong in git: it grows continuously, it is large, and .salt must never be
+# published alongside the hashed chatter ids it salts.
+data/chat/
+data/clips/
+**/.salt
+
+# Pipeline output
 buffer/
 clips/
-web/clip-after.mp4
-web/before-after.png
+exports/
+*.ts
+!src/*.ts
