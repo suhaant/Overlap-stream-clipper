@@ -173,3 +173,53 @@ export async function* harvestClips({
     if (fresh.length) yield fresh;
   }
 }
+
+/**
+ * Look up a category by its exact Twitch name, e.g. "Grand Theft Auto VI".
+ *
+ * The channel list is not hardcoded anywhere in this project, because guessing
+ * who is streaming a game on a given day is exactly the kind of assumption that
+ * rots. Resolve the category, then ask who is live in it.
+ */
+export async function getGameByName(name, opts = {}) {
+  const json = await helix('games', { name }, opts);
+  const g = json.data?.[0];
+  return g ? { id: g.id, name: g.name } : null;
+}
+
+/** Category search, for when the exact name is not known. */
+export async function searchCategories(query, opts = {}) {
+  const json = await helix('search/categories', { query, first: 20 }, opts);
+  return (json.data ?? []).map(g => ({ id: g.id, name: g.name }));
+}
+
+/**
+ * Live streams in a category, most viewers first.
+ *
+ * `minViewers` matters for this project rather than being a nicety: LIGHTOR
+ * reports its chat method needs more than ~500 messages an hour and more than
+ * ~100 viewers to work at all, so recording a channel below that threshold
+ * spends disk on data that cannot carry the signal.
+ */
+export async function getStreamsByGame({
+  gameId, language, minViewers = 0, limit = 100,
+}, opts = {}) {
+  const rows = await collect('streams', {
+    game_id: gameId, language, first: 100, type: 'live',
+  }, { maxPages: Math.ceil(limit / 100) + 1, ...opts });
+
+  return rows
+    .filter(s => (s.viewer_count ?? 0) >= minViewers)
+    .slice(0, limit)
+    .map(s => ({
+      userId: s.user_id,
+      login: s.user_login,
+      name: s.user_name,
+      gameId: s.game_id,
+      gameName: s.game_name,
+      title: s.title,
+      viewerCount: s.viewer_count,
+      startedAt: s.started_at,
+      language: s.language,
+    }));
+}
