@@ -6,24 +6,49 @@ recorder stays up.
 ## One-time: Twitch credentials
 
 The chat recorder needs nothing — `src/chat.mjs` reads anonymously. The Helix
-calls (discovery and clip harvesting) need an app token, which needs a
-registered application:
+calls (discovery and clip harvesting) need an app access token, which needs a
+registered application.
 
-1. Go to https://dev.twitch.tv/console/apps and register an application.
-2. OAuth redirect URL can be `http://localhost` — the client-credentials grant
-   never uses it.
-3. Category: Application Integration.
-4. Copy the Client ID, then generate a Client Secret.
+**Enable two-factor auth on the Twitch account first.** This is a hard
+requirement, not a suggestion: the docs say "You must also enable two-factor
+authentication (2FA) for your account", and registration is unavailable without
+it. Settings → Security and Privacy. The console needs a refresh afterwards —
+the docs note "You'll need to refresh your console for these changes to take
+effect."
 
-Then, in the shell you run the tools from:
+Then at https://dev.twitch.tv/console/apps:
+
+1. Applications → **Register Your Application**.
+2. **Name** — must be unique across every Twitch application, so a generic name
+   gets rejected. Something like `overlap-stream-clipper-research` works.
+3. **OAuth Redirect URLs** — `http://localhost:3000`, then click **Add**. The
+   client-credentials grant never redirects anywhere, so the value is unused;
+   the form wants one regardless.
+4. **Category** — Application Integration.
+5. Captcha, then **Create**.
+6. **Manage** on the new app → copy the **Client ID**, then **New Secret** and
+   copy that too.
+
+Keep the secret somewhere safe. Generating a new one invalidates the old
+immediately: "Getting a new secret invalidates the previous secret, which might
+make your API requests fail until you update your app."
+
+Then copy the example file, fill in the two values, and check them:
 
 ```bash
-export TWITCH_CLIENT_ID=...
-export TWITCH_CLIENT_SECRET=...
+cp .env.example .env
 ```
 
-No scope is required. The token this gets cannot read or act on any user's
-account; it only reads public endpoints.
+```bash
+node tools/check-auth.mjs
+```
+
+That verifies the credentials, the token mint, Helix acceptance and the category
+lookup as separate steps, so a failure says which one is wrong. It prints no
+token and reports the secret only by length.
+
+No scope is requested anywhere. An app access token cannot read or act on any
+user's account; it only reads public endpoints.
 
 ## 1. Find the channels
 
