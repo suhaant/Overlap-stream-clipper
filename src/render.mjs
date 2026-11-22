@@ -13,7 +13,12 @@ export function probeDimensions(input) {
     '-show_entries', 'stream=width,height',
     '-of', 'csv=p=0', input,
   ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  const [w, h] = out.trim().split(',').map(Number);
+  // A concatenated .ts can carry several program entries, so ffprobe prints one
+  // CSV line per match. Take the first, or the lines splice together and yield NaN.
+  const [w, h] = out.trim().split('\n')[0].split(',').map(Number);
+  if (!Number.isFinite(w) || !Number.isFinite(h)) {
+    throw new Error(`unparseable ffprobe dimensions: ${JSON.stringify(out.slice(0, 80))}`);
+  }
   return { width: w, height: h };
 }
 
@@ -51,11 +56,16 @@ export function renderClip({
   let captioned = false;
 
   if (wantsText && canBurnText() && font) {
-    let videoHeight = Math.round(height * 9 / 16);
+    // Height of the centred frame once scaled to full canvas width. The fallback
+    // assumes a 16:9 source: 1080 wide -> 608 tall, NOT height*9/16.
+    let videoHeight = Math.round((width * 9) / 16 / 2) * 2;
     try {
       const src = probeDimensions(input);
       videoHeight = Math.round((width * src.height) / src.width / 2) * 2;
-    } catch { /* fall back to a 16:9 assumption */ }
+    } catch { /* keep the 16:9 assumption */ }
+    if (!Number.isFinite(videoHeight) || videoHeight <= 0 || videoHeight > height) {
+      videoHeight = Math.round((width * 9) / 16 / 2) * 2;
+    }
 
     const caps = captionFilters({
       hook, chatLines, font, width, height, videoHeight,

@@ -1,6 +1,6 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { ffmpegBin } from './ffmpeg.mjs';
 
 /**
@@ -110,8 +110,11 @@ export class StreamBuffer {
     const usable = covering.filter(s => { try { return statSync(s.path).size > 2048; } catch { return false; } });
     if (!usable.length) return null;
 
+    // Absolute paths, deliberately. The concat demuxer resolves relative entries
+    // against the LIST FILE's directory, not the process working directory -- so a
+    // list in clips/ referring to buffer/x.ts would look for clips/buffer/x.ts.
     const listPath = `${outPath}.list`;
-    writeFileSync(listPath, usable.map(s => `file '${s.path.replace(/'/g, "'\\''")}'`).join('\n'));
+    writeFileSync(listPath, usable.map(s => `file '${resolve(s.path).replace(/'/g, "'\\''")}'`).join('\n'));
 
     execFileSync(ffmpegBin(), [
       '-hide_banner', '-loglevel', 'error', '-y',

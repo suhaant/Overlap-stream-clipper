@@ -62,6 +62,9 @@ export function captionFilters({
   const bottomBandTop = topBandBottom + videoHeight;
 
   const draw = (text, { y, size, color = 'white', box = true }) => {
+    // A non-finite y silently renders the text off-frame rather than failing, which
+    // is how a NaN from a bad probe once produced a clip with no captions at all.
+    if (!Number.isFinite(y)) throw new Error(`caption y is not finite: ${y}`);
     const file = join(tmpDir, `cap${i++}.txt`);
     writeFileSync(file, text, 'utf8');
     const opts = [
