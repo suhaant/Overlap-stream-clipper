@@ -1,4 +1,4 @@
-# HypeCut
+# Overlap Stream Clipper
 
 **A clip-detection node for [Overlap](https://www.overlap.ai) that uses live audience reaction instead of content analysis.**
 
