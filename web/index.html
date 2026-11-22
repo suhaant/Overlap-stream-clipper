@@ -1,0 +1,328 @@
+<title>HypeCut</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: single column, generous vertical rhythm, one wide media moment in the hero.
+     Dark-first because the subject is watched in the dark. */
+  :root {
+    --bg: #0c0e14;
+    --surface: #141823;
+    --surface-2: #1b2130;
+    --line: #262d3d;
+    --fg: #eef1f7;
+    --muted: #949db4;
+    --accent: #ff4d4d;
+    --accent-soft: #ff4d4d1f;
+    --data: #5fd4c4;
+    --font-display: 'Archivo', system-ui, sans-serif;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f0ec;
+      --line: #dfdfd8;
+      --fg: #15171c;
+      --muted: #5f6675;
+      --accent: #d62828;
+      --accent-soft: #d6282814;
+      --data: #0d7f72;
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f7f4;
+    --surface: #ffffff;
+    --surface-2: #f0f0ec;
+    --line: #dfdfd8;
+    --fg: #15171c;
+    --muted: #5f6675;
+    --accent: #d62828;
+    --accent-soft: #d6282814;
+    --data: #0d7f72;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  section { padding-block: 64px; border-top: 1px solid var(--line); }
+  section:first-of-type { border-top: 0; }
+
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 6vw, 3.6rem); font-weight: 900; line-height: 1.04; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.4rem, 3.4vw, 2rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; }
+  h3 { font-size: 1rem; font-weight: 700; }
+  p { margin: 0; }
+  a { color: var(--fg); }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .lede { font-size: clamp(1.02rem, 2vw, 1.18rem); color: var(--muted); max-width: 60ch; }
+  .stack { display: flex; flex-direction: column; gap: 20px; }
+  .stack-sm { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Hero */
+  .hero { padding-block: clamp(44px, 8vw, 80px) 64px; }
+  .hero-grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 44px; align-items: center; }
+  @media (max-width: 760px) { .hero-grid { grid-template-columns: 1fr; gap: 32px; } }
+  .phone {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 24px 60px -24px rgba(0,0,0,.65);
+    max-width: 320px;
+    width: 100%;
+    justify-self: center;
+  }
+  /* Reserve the frame's space so a slow or blocked video never leaves a void. */
+  .phone video { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; background: #000; max-width: 100%; }
+  .phone-cap {
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);
+    padding: 9px 12px; border-top: 1px solid var(--line); background: var(--surface);
+    display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+
+  .claimbar {
+    display: flex; flex-wrap: wrap; gap: 0;
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface);
+  }
+  .claim { flex: 1 1 150px; padding: 16px 18px; border-right: 1px solid var(--line); min-width: 0; }
+  .claim:last-child { border-right: 0; }
+  .claim .n {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: 1.5rem; letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+  }
+  .claim .l { font-size: 0.8rem; color: var(--muted); }
+
+  /* Convergence evidence */
+  .rows { display: flex; flex-direction: column; gap: 8px; }
+  .row {
+    display: grid; grid-template-columns: 1fr 86px 86px;
+    gap: 12px; align-items: center;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 9px; padding: 11px 14px;
+  }
+  @media (max-width: 620px) { .row { grid-template-columns: 1fr 64px 64px; gap: 8px; padding: 10px; } }
+  .row.real { border-left: 3px solid var(--data); }
+  .row.fake { border-left: 3px solid var(--accent); }
+  .msg { font-family: var(--font-mono); font-size: 0.82rem; min-width: 0; overflow-wrap: anywhere; }
+  .metric { font-family: var(--font-mono); font-size: 0.86rem; text-align: right; font-variant-numeric: tabular-nums; }
+  .metric .bar { height: 4px; border-radius: 2px; background: var(--surface-2); margin-top: 4px; overflow: hidden; }
+  .metric .bar i { display: block; height: 100%; background: var(--data); }
+  .row.fake .metric .bar i { background: var(--accent); }
+  .head {
+    display: grid; grid-template-columns: 1fr 86px 86px; gap: 12px;
+    padding: 0 14px 4px; font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  }
+  .head span:not(:first-child) { text-align: right; }
+  @media (max-width: 620px) { .head { grid-template-columns: 1fr 64px 64px; gap: 8px; padding: 0 10px 4px; } }
+
+  /* Quote pair */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .pair { grid-template-columns: 1fr; } }
+  .quote { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .quote q { font-size: 1.02rem; display: block; margin-bottom: 10px; }
+  .quote cite { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); font-style: normal; }
+
+  /* Pipeline */
+  .pipe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .node {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    padding: 9px 13px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface);
+  }
+  .node.new { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .arrow { color: var(--muted); font-family: var(--font-mono); }
+
+  figure { margin: 0; }
+  figure img { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; }
+  figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
+
+  .cta {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: var(--accent); color: #fff; text-decoration: none;
+    font-weight: 600; padding: 13px 22px; border-radius: 9px; font-size: 0.95rem;
+  }
+  .cta:focus-visible, a:focus-visible { outline: 2px solid var(--data); outline-offset: 3px; }
+  footer { padding-block: 44px 64px; color: var(--muted); font-size: 0.86rem; }
+  .mono-note { font-family: var(--font-mono); font-size: 0.76rem; color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="stack">
+        <p class="eyebrow">Proposed node · Overlap</p>
+        <h1>Chat already knows which moment to clip.</h1>
+        <p class="lede">
+          Overlap's <strong>Find Clips</strong> reads the recording. On a podcast that is right, because the
+          words are the moment. On GTA&nbsp;6 nobody is talking, the audio is sirens, and the thing that makes
+          a moment good is that forty thousand people reacted to it. The video cannot see that. Chat can.
+        </p>
+        <div class="claimbar">
+          <div class="claim"><div class="n">0</div><div class="l">frames analysed</div></div>
+          <div class="claim"><div class="n">23</div><div class="l">people typed "Lol" in 4s</div></div>
+          <div class="claim"><div class="n">4.4s</div><div class="l">to cut, reframe, caption</div></div>
+        </div>
+      </div>
+      <div class="phone">
+        <video src="clip-after.mp4" poster="clip-poster.png" autoplay muted loop playsinline controls preload="metadata"></video>
+        <div class="phone-cap"><span>stableronaldo · GTA VI</span><span>unedited output</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stack">
+    <p class="eyebrow">The signal</p>
+    <h2>It isn't the words. It's that everyone types the same word at once.</h2>
+    <p class="lede">
+      The obvious build matches chat against a lexicon of KEKW, LOL, POG. Measured against 6,095 messages of
+      real GTA&nbsp;6 chat, that ranked pure conversation <em>above</em> the best moment in the run.
+    </p>
+
+    <div>
+      <div class="head"><span>chat window</span><span>convergence</span><span>lexicon</span></div>
+      <div class="rows">
+        <div class="row real">
+          <span class="msg">86 people typing <strong>heist</strong></span>
+          <span class="metric">0.88<span class="bar"><i style="width:88%"></i></span></span>
+          <span class="metric">0.01<span class="bar"><i style="width:1%"></i></span></span>
+        </div>
+        <div class="row real">
+          <span class="msg">NOOO / SAJ / SAJ / NOOOOO</span>
+          <span class="metric">0.52<span class="bar"><i style="width:52%"></i></span></span>
+          <span class="metric">0.13<span class="bar"><i style="width:13%"></i></span></span>
+        </div>
+        <div class="row real">
+          <span class="msg">WTF / LOL / LO / LOL</span>
+          <span class="metric">0.39<span class="bar"><i style="width:39%"></i></span></span>
+          <span class="metric">0.38<span class="bar"><i style="width:38%"></i></span></span>
+        </div>
+        <div class="row fake">
+          <span class="msg">@M0hamdQ LOL / ciao bello / mhm mhm gotta close chat</span>
+          <span class="metric">0.25<span class="bar"><i style="width:25%"></i></span></span>
+          <span class="metric">0.50<span class="bar"><i style="width:50%"></i></span></span>
+        </div>
+        <div class="row fake">
+          <span class="msg">dansi / Me / this time / it looked cooler without camo</span>
+          <span class="metric">0.23<span class="bar"><i style="width:23%"></i></span></span>
+          <span class="metric">0.32<span class="bar"><i style="width:32%"></i></span></span>
+        </div>
+        <div class="row fake">
+          <span class="msg">Hi Lacy / sob / stop / ps5 / XBOX</span>
+          <span class="metric">0.21<span class="bar"><i style="width:21%"></i></span></span>
+          <span class="metric">0.14<span class="bar"><i style="width:14%"></i></span></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="lede">
+      The best detection of the run scored <strong>0.01</strong> on vocabulary. The worst false positive scored
+      <strong>0.50</strong>, because one person wrote "@M0hamdQ LOL". Convergence separates them cleanly, and
+      because it never reads the words themselves it works unchanged on Spanish chat and on a game whose slang
+      does not exist yet. No per-title tuning.
+    </p>
+    <p class="mono-note">16 candidates → 4 accepted · the gate removed 75%, every survivor a genuine mass reaction</p>
+  </section>
+
+  <section class="stack">
+    <p class="eyebrow">The gap</p>
+    <h2>Two sentences from overlap.ai, four days apart.</h2>
+    <div class="pair">
+      <div class="quote">
+        <q>Connect your Twitch account and have your AI agent watch every second of your stream, read every chat
+        message, and generate clips in real time. No more waiting until the stream ends.</q>
+        <cite>Overlap, announcing Twitch support</cite>
+      </div>
+      <div class="quote">
+        <q>Stream to Twitch or YouTube and keep the VOD.</q>
+        <cite>Overlap, "How to Clip GTA 6" — step one, published 18 Nov, the day before launch</cite>
+      </div>
+    </div>
+    <p class="lede">
+      The flagship guide for the biggest game launch in history still assumes the VOD workflow. During launch
+      week, when Overlap's own post says attention is highest, a VOD pipeline posts hours late. This is the
+      thing that closes that gap.
+    </p>
+  </section>
+
+  <section class="stack">
+    <p class="eyebrow">Why it is a margin problem</p>
+    <h2>Selection precision is gross margin, not polish.</h2>
+    <p class="lede">
+      Overlap bills $0.50–$2.50 CPM on delivered views and absorbs the downside: "nothing charged for reach that
+      did not land." Every clip that flops costs render time and earns zero. For most clipping tools, picking
+      badly is a user complaint. Here it is on the P&amp;L. A detector that fires on conversation half the time
+      makes that worse; one that doesn't is a direct margin improvement.
+    </p>
+    <div class="pipe">
+      <span class="node new">Twitch Live</span><span class="arrow">→</span>
+      <span class="node new">Chat Spike</span><span class="arrow">→</span>
+      <span class="node">Reframe</span><span class="arrow">→</span>
+      <span class="node">Style Video</span><span class="arrow">→</span>
+      <span class="node">Post to Social</span>
+    </div>
+    <p class="mono-note">Red is new. The other three already exist, and overlap_workflows_create already accepts them.</p>
+  </section>
+
+  <section class="stack">
+    <p class="eyebrow">Framing</p>
+    <h2>Same code, same footage, three parameters apart.</h2>
+    <figure>
+      <img src="before-after.png" alt="Left: the clip letterboxed small inside a blurred vertical frame. Right: the same moment filling the frame with the facecam and HUD visible.">
+      <figcaption>
+        Left is the first automated attempt: letterboxed at native scale, most of the canvas wasted on blur.
+        Right is after the framing was measured by hand against a clip that had actually travelled, then ported
+        back into the renderer. The crop anchor is per channel, because a facecam in a bottom corner is the most
+        valuable pixels in a reaction clip and a centred crop deletes it.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="stack">
+    <p class="eyebrow">What it does not do yet</p>
+    <h2>It knows chat erupted. It does not know why.</h2>
+    <p class="lede">
+      Captions still come from a small set of phrases keyed to moment type. The top detection in the run —
+      86 people typing "heist" — is correctly labelled <span class="mono-note">unclear</span>, because detection
+      is vocabulary-independent but naming a moment is not. Closing that needs a vision or LLM pass over the
+      clip window. It is the most interesting thing left to build.
+    </p>
+    <p class="lede">
+      Rights are the other open edge. Overlap's own guide is blunt that monetized GTA content is "tolerated, not
+      licensed," and flags story spoilers and in-game radio as the main takedown risks. A spoiler gate and music
+      detection belong in this pipeline before it points at a paying campaign.
+    </p>
+    <p><a class="cta" href="https://github.com/suhaant/Overlap-stream-clipper">Read the code on GitHub</a></p>
+  </section>
+
+  <footer>
+    Built by Suhaan Puma. Chat read anonymously over IRC-over-WebSocket, no credentials. Detection, buffering,
+    cutting, reframing and captioning run unattended in about 4.4 seconds per clip.
+  </footer>
+
+</div>
