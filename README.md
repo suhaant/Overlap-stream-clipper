@@ -135,6 +135,7 @@ src/chat.mjs       anonymous Twitch chat reader — zero credentials
 src/detector.mjs   bucketed median/MAD baseline, hysteresis spike tracking, onset estimation
 src/shape.mjs      reaction-shape gate
 src/classify.mjs   moment type (funny/shock/hype/fail/scary) + ranking score
+src/render.mjs     cut the detected window and reframe it 9:16 (ffmpeg)
 record.mjs         capture chat to JSONL
 replay.mjs         deterministic offline replay for threshold tuning
 tests/             numeric proof of the baseline fix and the gate separation
@@ -147,7 +148,21 @@ npm test                                      # proves the math
 node live.mjs ohnepixel,jynxzi 170            # watch it detect on live streams
 node record.mjs ohnepixel,stableronaldo 9     # capture chat for tuning
 node replay.mjs data/chat-*.jsonl --verbose   # deterministic replay
+node clip.mjs source.mp4 15 30 out/clip.mp4    # cut + 9:16 reframe
 ```
+
+`renderClip` takes a local file **or an HLS manifest URL**, so the same stage serves a
+recorded VOD and a live stream unchanged. The reframe is "letterbox on blur": the original
+16:9 frame full-width and centred over a blurred, zoomed copy of itself. For gameplay this
+beats a centre crop, because the HUD that often *is* the moment — minimap, wanted stars,
+weapon wheel — lives at the frame edges a crop discards. Measured: a 30s clip renders in
+4.4s, roughly 7x faster than realtime, so a six-hour stream yielding 50 clips costs about
+four minutes of render.
+
+**Captions are not burned in yet.** The ffmpeg on this machine is a minimal build with no
+`libfreetype` and no `libass`, so neither `drawtext` nor `subtitles` exists. Burned-in
+captions are not optional for short-form — Overlap's own GTA 6 guide calls for them — so
+this needs either a fuller ffmpeg or a text rasteriser feeding PNG overlays.
 
 Chat is read anonymously over IRC-over-WebSocket using the undocumented `justinfan` nick: no OAuth,
 no credentials, nothing to leak. Production would use EventSub `channel.chat.message`, which needs a
