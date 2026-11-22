@@ -1,15 +1,19 @@
 node_modules/
+*.log
+.DS_Store
 
 # Recorded chat and harvested labels. The dataset is the asset but it does not
 # belong in git: it grows continuously, it is large, and .salt must never be
-# published alongside the hashed chatter ids it salts.
-data/chat/
-data/clips/
+# published alongside the hashed chatter ids it salts, or they become
+# reversible for any login someone cares to guess.
+data/
 **/.salt
 
 # Pipeline output
-buffer/
 clips/
+buffer/
 exports/
-*.ts
-!src/*.ts
+
+# Demo assets, served from Vercel rather than carried in the repo
+web/clip-after.mp4
+web/before-after.png
