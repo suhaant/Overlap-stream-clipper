@@ -19,7 +19,10 @@
 
 import { readFileSync, existsSync, mkdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { loadEnv } from '../src/env.mjs';
 import { harvestClips } from '../src/twitch-endpoints.mjs';
+
+loadEnv();
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {

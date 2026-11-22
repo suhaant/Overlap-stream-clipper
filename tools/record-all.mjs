@@ -12,7 +12,10 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
+import { loadEnv } from '../src/env.mjs';
 import { ChatRecorder } from '../src/recorder.mjs';
+
+loadEnv();
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
