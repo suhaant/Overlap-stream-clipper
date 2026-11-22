@@ -11,7 +11,8 @@
     "replay": "node replay.mjs",
     "discover": "node tools/discover-channels.mjs",
     "record-all": "node tools/record-all.mjs",
-    "harvest": "node tools/harvest-clips.mjs"
+    "harvest": "node tools/harvest-clips.mjs",
+    "check-auth": "node tools/check-auth.mjs"
   },
   "engines": {
     "node": ">=22"
