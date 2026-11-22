@@ -5,6 +5,34 @@
 Built against Overlap's node model: `Twitch Live → Chat Spike → Reframe → Style Video → Post to Social`.
 The last three nodes already exist. This is the first two.
 
+## Where this is going
+
+The detector in `src/detector.mjs` is a hand-tuned prior: the thresholds
+(`fireZ: 3.2`, `shapeGate: 0.30`) were chosen by eye against live streams. The
+next version learns them instead, supervised by a label that already exists in
+volume and costs nothing.
+
+Twitch's own clip button is the label. `GET /helix/clips` returns
+`vod_offset`, the second a viewer pressed clip, so every clip ever made is a
+timestamped human judgement about where a moment was. Positives are the seconds
+people clipped; negatives are every other second of the same stream, which is
+where the hard cases live — the raid, the sub train, the drama, everything that
+spikes message volume without being worth posting.
+
+Reading the prior work first changed the plan. [LIGHTOR
+(2019)](https://arxiv.org/abs/1910.12201) already publishes a convergence-style
+message-similarity feature, a peak-minus-reaction-lag start offset and
+precision@K evaluation, so this repo rediscovered three published results rather
+than inventing them. What is genuinely open is **online** detection: every
+chat-based method in the literature peak-picks over a finished video, and one of
+them refines boundaries using viewer seek behaviour that only exists after the
+VOD is published. Deciding live, with no future samples, is a different problem.
+
+- [docs/RESEARCH.md](docs/RESEARCH.md) — what the literature already settled, and the one place its numbers contradict this repo's
+- [docs/SCOPE.md](docs/SCOPE.md) — the task stated so it can be scored, the metric, and how it could be wrong
+- [docs/PLAN-5DAY.md](docs/PLAN-5DAY.md) — the build order
+- [docs/DATA.md](docs/DATA.md) — how to run the collection
+
 ---
 
 ## What it produces
