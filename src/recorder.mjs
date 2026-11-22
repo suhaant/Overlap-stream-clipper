@@ -57,6 +57,9 @@ export class ChatRecorder extends EventEmitter {
     this.channel = channel.toLowerCase();
     this.root = dir;
     this.dir = join(dir, this.channel);
+    // Created here rather than in start(), so a recorder that is constructed
+    // always has somewhere to write, flush() included.
+    mkdirSync(this.dir, { recursive: true });
     this.flushMs = flushMs;
     this.salt = datasetSalt(dir);
     this.buffer = [];
