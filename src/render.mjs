@@ -6,7 +6,7 @@ import { captionFilters } from './caption.mjs';
 
 const ffprobeBin = () => ffmpegBin().replace(/ffmpeg$/, 'ffprobe');
 
-/** Source pixel dimensions, so we know how tall the centred frame will be. */
+/** Source pixel dimensions, so we know how tall the scaled frame will be. */
 export function probeDimensions(input) {
   const out = execFileSync(ffprobeBin(), [
     '-v', 'error', '-select_streams', 'v:0',
@@ -22,56 +22,79 @@ export function probeDimensions(input) {
   return { width: w, height: h };
 }
 
+const even = (n) => Math.round(n / 2) * 2;
+
 /**
- * Cut a detected window out of a source and reframe it 9:16 for short-form.
+ * LAYOUT, derived by hand.
  *
- * The reframe is "letterbox on blur": the original 16:9 frame sits full-width and
- * centred over a blurred, zoomed copy of itself. For gameplay this beats a centre
- * crop, because a crop throws away the minimap, the weapon wheel and the wanted
- * stars -- the HUD lives at the frame edges, and that HUD is often what the moment
- * is about. Overlap's `Convert to Vertical` node exposes the same choice through
- * its `style` and `gaussian_blur` settings.
+ * These numbers are not guesses. One clip was edited by hand in Edits against a
+ * reference clip that actually went viral, and these are what looked right when it
+ * did:
  *
- * `input` may be a local file OR an HLS manifest URL, so the same stage serves a
- * recorded VOD and a live stream unchanged.
+ *   videoScale   1.63  -- video is 163% of canvas WIDTH, so it overflows and crops
+ *                         the sides. At 1.0 the frame is letterboxed and most of
+ *                         the canvas is wasted blur. This was the single biggest
+ *                         visual error in the earlier version.
+ *   videoOffsetY 0.125 -- pushed down an eighth of the canvas, clearing a band at
+ *                         the top for the headline rather than overlapping it.
+ *
+ * Cropping the sides does cost the far-left HUD, which is the trade for filling the
+ * frame; a facecam in a bottom corner usually survives, but not always. Per-channel
+ * override is the right answer and is why these are parameters.
  */
+export const LAYOUT = { videoScale: 1.63, videoOffsetY: 0.125, cropAnchorX: 0.5, blurSigma: 28 };
+
 export function renderClip({
   input, startSec, durationSec, out,
   hook, chatLines = [],
-  width = 1080, height = 1920, blurSigma = 28, crf = 20, tmpDir,
+  width = 1080, height = 1920,
+  videoScale = LAYOUT.videoScale,
+  videoOffsetY = LAYOUT.videoOffsetY,
+  cropAnchorX = LAYOUT.cropAnchorX,
+  blurSigma = LAYOUT.blurSigma,
+  fps, crf = 20, tmpDir,
 }) {
   mkdirSync(dirname(out), { recursive: true });
+
+  let aspect = 9 / 16;
+  try {
+    const src = probeDimensions(input);
+    aspect = src.height / src.width;
+  } catch { /* assume 16:9 */ }
+
+  const scaledW = even(width * videoScale);
+  const scaledH = even(scaledW * aspect);
+  // Scaling past the canvas width means the sides get cropped, and WHICH side is
+  // a per-channel decision: a facecam in a bottom corner is the most valuable pixels
+  // in a reaction clip, and a centred crop throws it away. 0 keeps the left edge,
+  // 1 the right, 0.5 centres. stableronaldo's cam is bottom-left, so that channel
+  // wants a low anchor.
+  const overlayX = Math.round((width - scaledW) * Math.min(Math.max(cropAnchorX, 0), 1));
+  const overlayY = Math.round((height - scaledH) / 2 + height * videoOffsetY);
+  const videoTop = overlayY;
+  const videoBottom = overlayY + scaledH;
 
   const chain = [
     `[0:v]split=2[bg][fg]`,
     `[bg]scale=${width}:${height}:force_original_aspect_ratio=increase,` +
       `crop=${width}:${height},gblur=sigma=${blurSigma}[bgb]`,
-    `[fg]scale=${width}:-2[fgs]`,
+    `[fg]scale=${scaledW}:${scaledH}[fgs]`,
   ];
-
-  let last = `[bgb][fgs]overlay=(W-w)/2:(H-h)/2`;
+  let last = `[bgb][fgs]overlay=${overlayX}:${overlayY}`;
 
   const font = pickFont();
-  const wantsText = Boolean(hook || chatLines.length);
+  const warnings = [];
   let captioned = false;
 
-  if (wantsText && canBurnText() && font) {
-    // Height of the centred frame once scaled to full canvas width. The fallback
-    // assumes a 16:9 source: 1080 wide -> 608 tall, NOT height*9/16.
-    let videoHeight = Math.round((width * 9) / 16 / 2) * 2;
-    try {
-      const src = probeDimensions(input);
-      videoHeight = Math.round((width * src.height) / src.width / 2) * 2;
-    } catch { /* keep the 16:9 assumption */ }
-    if (!Number.isFinite(videoHeight) || videoHeight <= 0 || videoHeight > height) {
-      videoHeight = Math.round((width * 9) / 16 / 2) * 2;
-    }
-
+  if ((hook || chatLines.length) && canBurnText() && font) {
     const caps = captionFilters({
-      hook, chatLines, font, width, height, videoHeight,
+      hook, chatLines, font, width, height, videoTop, videoBottom,
       tmpDir: tmpDir || `${dirname(out)}/.captions`,
     });
-    if (caps.length) { last += ',' + caps.join(','); captioned = true; }
+    warnings.push(...caps.warnings);
+    if (caps.filters.length) { last += ',' + caps.filters.join(','); captioned = true; }
+  } else if (hook && !canBurnText()) {
+    warnings.push('ffmpeg has no drawtext; captions skipped');
   }
 
   chain.push(`${last},format=yuv420p[v]`);
@@ -85,10 +108,11 @@ export function renderClip({
     '-t', String(durationSec),
     '-filter_complex', chain.join(';'),
     '-map', '[v]',
-    '-map', '0:a?',            // gameplay sources sometimes have no audio track
+    '-map', '0:a?',              // gameplay sources sometimes have no audio
+    ...(fps ? ['-r', String(fps)] : []),
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(crf),
     '-c:a', 'aac', '-b:a', '128k',
-    '-movflags', '+faststart',  // playable before it finishes downloading
+    '-movflags', '+faststart',
     out,
   ];
 
@@ -98,14 +122,14 @@ export function renderClip({
     ff.stderr.on('data', (d) => { err += d; });
     ff.on('error', reject);
     ff.on('close', (code) => code === 0
-      ? resolve({ out, width, height, durationSec, captioned })
+      ? resolve({ out, width, height, durationSec, captioned, warnings,
+                  layout: { scaledW, scaledH, overlayX, overlayY, videoTop, videoBottom } })
       : reject(new Error(`ffmpeg exited ${code}: ${err.slice(0, 700)}`)));
   });
 }
 
 /** Turn a detected spike into the render arguments for its clip. */
 export function clipPlanFor(spike, { streamStartedAt, input, outDir = 'clips' }) {
-  // Spike timestamps are wall-clock; ffmpeg wants an offset into the source.
   const startSec = Math.max(0, (spike.clipStartAt - streamStartedAt) / 1000);
   return {
     input,

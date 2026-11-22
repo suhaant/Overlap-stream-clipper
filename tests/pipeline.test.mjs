@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { chatHighlights, captionFilters } from '../src/caption.mjs';
+import { chatHighlights, captionFilters, layoutHeadline } from '../src/caption.mjs';
 import { StreamBuffer } from '../src/buffer.mjs';
 
 test('chat highlights deduplicate but keep the count', () => {
@@ -31,11 +31,12 @@ test('caption text goes through textfile, never inline text=', () => {
   try {
     // Chat full of ffmpeg filter delimiters. Inlining this would break the filter
     // graph at best, and allow injection into it at worst.
-    const filters = captionFilters({
+    const { filters } = captionFilters({
       hook: 'chat lost it',
       chatLines: ["it's 3:30, drawtext=evil:x=0,y=0 [a];[b]"],
       tmpDir: dir,
       font: '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+      videoTop: 705, videoBottom: 1695,
     });
     assert.ok(filters.length >= 2);
     for (const f of filters) {
@@ -65,4 +66,19 @@ test('buffer maps strftime segment names back to wall-clock windows', () => {
     assert.ok(segs[2].endMs > segs[2].startMs);
     assert.ok(segs.every((s, i, a) => i === 0 || s.startMs >= a[i - 1].startMs), 'must be sorted');
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('headline wraps without breaking words, and refuses impossible ones', () => {
+  const fit = layoutHeadline('CHAT LOST IT AT THIS GTA 6 MOMENT', { maxWidth: 960 });
+  assert.ok(fit.lines.length <= 3);
+  // No line may end mid-word: every line is whole words from the original.
+  const rejoined = fit.lines.join(' ').replace(/\s+/g, ' ');
+  assert.strictEqual(rejoined, 'CHAT LOST IT AT THIS GTA 6 MOMENT');
+
+  // A word wider than the canvas cannot be wrapped OR shrunk into legibility.
+  // The headline has to be rewritten, so the caller is told rather than shipped
+  // a frame with the word sliced in half.
+  const bad = layoutHeadline('supercalifragilisticexpialidociousness happened', { maxWidth: 300 });
+  assert.ok(bad.error, 'expected an error for an unfittable word');
+  assert.match(bad.error, /too long/);
 });

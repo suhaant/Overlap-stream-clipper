@@ -152,21 +152,35 @@ node clip.mjs source.mp4 15 30 out/clip.mp4    # cut + 9:16 reframe
 ```
 
 `renderClip` takes a local file **or an HLS manifest URL**, so the same stage serves a
-recorded VOD and a live stream unchanged. The reframe is "letterbox on blur": the original
-16:9 frame full-width and centred over a blurred, zoomed copy of itself. For gameplay this
-beats a centre crop, because the HUD that often *is* the moment — minimap, wanted stars,
-weapon wheel — lives at the frame edges a crop discards. Measured: a 30s clip renders in
-4.4s, roughly 7x faster than realtime, so a six-hour stream yielding 50 clips costs about
-four minutes of render.
+recorded VOD and a live stream unchanged.
 
-**Captions are not burned in yet.** The ffmpeg on this machine is a minimal build with no
-`libfreetype` and no `libass`, so neither `drawtext` nor `subtitles` exists. Burned-in
-captions are not optional for short-form — Overlap's own GTA 6 guide calls for them — so
-this needs either a fuller ffmpeg or a text rasteriser feeding PNG overlays.
+### The framing numbers came from editing one clip by hand
 
-Chat is read anonymously over IRC-over-WebSocket using the undocumented `justinfan` nick: no OAuth,
-no credentials, nothing to leak. Production would use EventSub `channel.chat.message`, which needs a
-user token with `user:read:chat`.
+The first automated version letterboxed the 16:9 frame at native scale over a blurred
+background. It was technically correct and visually dead — the video occupied about a third
+of the canvas and the rest was blur. So one clip was edited by hand in Edits against a
+reference clip that had actually gone viral, and the settings that made it work were
+measured and ported back:
+
+| parameter | value | why |
+| --------- | ----- | --- |
+| `videoScale` | `1.63` | video is 163% of canvas **width**, overflowing so the sides crop. At 1.0 most of the frame is wasted blur. |
+| `videoOffsetY` | `0.125` | pushes the video down an eighth of the canvas, clearing a band for the headline instead of colliding with it. |
+| `cropAnchorX` | per channel | which side survives the crop. A facecam in a bottom corner is the most valuable pixels in a reaction clip, and a centred crop throws it away. `stableronaldo` is bottom-left, so `0.12`. |
+
+The headline is a short statement of what happened, not a label — `CHAT LOST IT AT THIS GTA 6
+MOMENT`, not `CHAT LOST IT`. `layoutHeadline` wraps it and shrinks the font to fit the band.
+
+**The long-word rule** is the non-obvious one. `drawtext` does not wrap, so wrapping happens
+in code — but the real failure is a single word wider than the canvas. The first headline
+tried by hand was *"stableronaldo's chat LOST IT during GTA 6"*, which broke as
+`STABLERONA / LDO'S CHAT`. Reference clips get away with this only because handles like
+"N3on" are short. A word that cannot fit on its own line means the headline must be
+**rewritten, not squeezed**, so `layoutHeadline` returns an error rather than silently
+shipping a sliced word.
+
+Measured: a 30s clip renders in about 4.4s, roughly 7x realtime, so a six-hour stream
+yielding 50 clips costs around four minutes of render.
 
 ## Notes on rights
 

@@ -18,9 +18,29 @@ const runFor = Number(process.argv[3] || 420);
 /** The moment is in the past by the time chat finishes reacting; let the buffer catch up. */
 const SETTLE_MS = 15000;
 
+/**
+ * Headlines in the shape that actually travels: a short statement of what
+ * happened, not a label. "CHAT LOST IT" tells a scroller nothing. Kept free of
+ * long words, because a word wider than the canvas cannot be wrapped and the
+ * headline has to be rewritten rather than shrunk (see layoutHeadline).
+ */
 const HOOKS = {
-  funny: 'chat lost it', shock: 'wait what', hype: 'chat went crazy',
-  fail: 'oh no', scary: 'chat panicked', unclear: 'chat erupted',
+  funny:   'chat lost it at this GTA 6 moment',
+  shock:   'chat could not believe this',
+  hype:    'chat went crazy at this',
+  fail:    'it all went wrong right here',
+  scary:   'chat was not ready for this',
+  unclear: 'chat erupted at this moment',
+};
+
+/**
+ * Per-channel framing. Scaling past canvas width crops the sides, and which side
+ * to keep depends on where that streamer parks their facecam -- the most valuable
+ * pixels in a reaction clip. 0 keeps the left edge, 1 the right, 0.5 centres.
+ * Measured per channel; a sensible default is centre.
+ */
+const CHANNEL_LAYOUT = {
+  stableronaldo: { cropAnchorX: 0.12 },   // facecam bottom-left
 };
 
 mkdirSync('clips', { recursive: true });
@@ -68,11 +88,13 @@ for (const ch of channels) {
           input: ex.path, startSec: ex.offsetSec,
           durationSec: spike.durationMs / 1000, out,
           hook: HOOKS[cls.kind] || HOOKS.unclear,
-          chatLines: lines,
+          chatLines: lines.slice(0, 2),
           tmpDir: 'clips/.captions',
+          ...(CHANNEL_LAYOUT[ch] || {}),
         });
         made.push({ ch, out, kind: cls.kind, score: sc, z: spike.peakZ });
         console.log(`[${ch}]   -> ${r.out} (${ex.segments} segments, captioned=${r.captioned})`);
+        for (const warn of r.warnings) console.log(`[${ch}]   ! ${warn}`);
       } catch (e) {
         console.log(`[${ch}]   render failed: ${e.message.slice(0, 200)}`);
       }

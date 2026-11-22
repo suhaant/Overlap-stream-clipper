@@ -98,10 +98,28 @@ Matching the shape of the existing `nodeConfigs` keys (`find_clips`, `convert_to
     "pre_roll_ms": 14000,
     "post_roll_ms": 16000,
     "refractory_ms": 25000,       // one moment, one clip
-    "overlay_chat": true          // render the reaction into the letterbox bands
+    "overlay_chat": true          // render the reaction under the video
   }
 }
 ```
+
+The framing belongs with `convert_to_vertical`, whose `style` and `zoom` settings already
+cover this ground:
+
+```jsonc
+{
+  "convert_to_vertical": {
+    "style": "gaussian_blur",
+    "zoom": 1.63,              // 163% of canvas width; 1.0 wastes most of the frame
+    "y_offset": 0.125,         // clear a band at the top for the headline
+    "crop_anchor_x": 0.12      // per channel: which side survives the crop
+  }
+}
+```
+
+`crop_anchor_x` is the one that needs saying out loud. Scaling past canvas width crops the
+sides, and a facecam in a bottom corner is the most valuable pixels in a reaction clip. A
+centred crop silently deletes it. This is per-streamer, not per-game.
 
 And the trigger, alongside `New YouTube Video` / `RSS` / `Audio Livestream`:
 
