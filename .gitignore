@@ -17,3 +17,6 @@ exports/
 # Demo assets, served from Vercel rather than carried in the repo
 web/clip-after.mp4
 web/before-after.png
+
+# Credentials
+.env
