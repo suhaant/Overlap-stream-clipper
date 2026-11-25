@@ -20,3 +20,6 @@ web/before-after.png
 
 # Credentials
 .env
+
+# Trained artifact: regenerate with `npm run train`, do not review weights in diffs
+data/model.json
