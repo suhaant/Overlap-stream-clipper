@@ -34,6 +34,7 @@ const SCALES = [4000, 10000, 30000];
 const MIN_MESSAGES = Number(flag('min-messages', 5));
 
 const VIDEO_CACHE = 'data/videos.json';
+const LIVE_WINDOWS = flag('live-windows', 'data/live-windows.json');
 
 function loadClips(channel) {
   const path = join(CLIP_DIR, `${channel}.jsonl`);
@@ -95,7 +96,28 @@ async function main() {
   rmSync(OUT, { force: true });
   mkdirSync('data', { recursive: true });
 
-  let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0;
+  /**
+ * Broadcast intervals per channel, from tools/fetch-live-windows.mjs.
+ *
+ * The recorder stays joined whether or not the stream is up, and nobody clips
+ * an offline channel, so an offline window is one a scorer may pick and can
+ * never be right about. Gating them out is the difference between a timeline
+ * and a timeline of things that could have happened.
+ *
+ * A channel absent from the file -- or present with no broadcasts, which is
+ * what a channel with VODs disabled looks like -- is left ungated rather than
+ * dropped. cohhcarnage publishes no archives and is one of the best-labelled
+ * channels we have; silently deleting it would be worse than not gating it.
+ */
+const liveWindows = existsSync(LIVE_WINDOWS)
+  ? JSON.parse(readFileSync(LIVE_WINDOWS, 'utf8'))
+  : {};
+if (!Object.keys(liveWindows).length) {
+  console.log(`${LIVE_WINDOWS} not found -- windows will not be gated to broadcast time.`);
+  console.log('Run: node tools/fetch-live-windows.mjs\n');
+}
+
+let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0, skippedOffline = 0;
   const perChannel = [];
 
   for (const ch of channels) {
@@ -113,6 +135,10 @@ async function main() {
     // quiet there means nothing and a label inside it has no features behind it.
     const gapTimes = audits.filter(a => a._ !== 'open').map(a => a.t);
 
+    // Broadcast intervals for this channel, or null to leave it ungated.
+    const live = liveWindows[ch]?.length ? liveWindows[ch] : null;
+    const isLive = (t) => !live || live.some(w => t >= w.lo && t <= w.hi);
+
     const from = Math.max(span.startMs, messages[0].t);
     const to = Math.min(span.endMs, messages[messages.length - 1].t);
     const lines = [];
@@ -120,6 +146,7 @@ async function main() {
 
     for (let t = from + Math.max(...SCALES); t <= to; t += STEP_MS) {
       if (gapTimes.some(g => Math.abs(g - t) < 60_000)) { skippedGap++; continue; }
+      if (!isLive(t)) { skippedOffline++; continue; }
 
       const row = { ch, t };
       let enough = false;
@@ -155,6 +182,7 @@ async function main() {
   }
   console.log(`\n${totalRows.toLocaleString()} windows, ${totalPos.toLocaleString()} positive (${(totalPos / Math.max(totalRows, 1) * 100).toFixed(2)}%), ${totalEvents} clip events`);
   console.log(`${skippedGap.toLocaleString()} windows dropped for overlapping a disconnect`);
+  console.log(`${skippedOffline.toLocaleString()} windows dropped for falling outside broadcast time`);
   console.log(`-> ${OUT}`);
 }
 

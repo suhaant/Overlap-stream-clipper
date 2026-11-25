@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { peakPick, precisionAtK, weightedRecall, evaluate, bootstrapCI } from '../src/eval.mjs';
 import { makeRandom } from '../src/baselines.mjs';
+import { qualifyEvents, windowBlocks } from '../src/clipstore.mjs';
 
 const at = (sec, score) => ({ t: sec * 1000, score });
 const ev = (sec, presses = 1) => ({ atMs: sec * 1000, presses });
@@ -118,4 +119,48 @@ test('makeRandom is deterministic in (t, seed) and independent across seeds', ()
   const tenths = new Array(10).fill(0);
   for (const r of rows) tenths[Math.floor(a(r) * 10)]++;
   for (const n of tenths) assert.ok(n > 15, `uneven noise: ${tenths.join(',')}`);
+});
+
+test('qualifyEvents by block makes event density independent of position', () => {
+  // Two blocks of pickable time. The first is crowded with big-press moments
+  // because the recorder joined at peak; the second is quieter. An absolute
+  // bar keeps almost everything from the first block and little from the
+  // second, which is exactly the bias that let a clock beat chance.
+  const early = Array.from({ length: 20 }, (_, i) => ({ atMs: 1000 + i * 1000, presses: 4 + i }));
+  const late = Array.from({ length: 20 }, (_, i) => ({ atMs: 100_000 + i * 1000, presses: 2 }));
+  const all = [...early, ...late];
+
+  const absolute = qualifyEvents(all, { minPresses: 3 });
+  assert.equal(absolute.filter(e => e.atMs < 50_000).length, 20);
+  assert.equal(absolute.filter(e => e.atMs > 50_000).length, 0, 'the bias we are fixing');
+
+  const blocks = windowBlocks(all.map(e => e.atMs), 20);
+  const relative = qualifyEvents(all, { topPerHour: 5, blocks });
+  assert.equal(relative.filter(e => e.atMs < 50_000).length, 5);
+  assert.equal(relative.filter(e => e.atMs > 50_000).length, 5, 'both blocks get the same quota');
+
+  // Within a block it still takes the best moments, not the first ones.
+  const kept = relative.filter(e => e.atMs < 50_000).map(e => e.presses).sort((a, b) => b - a);
+  assert.deepEqual(kept, [23, 22, 21, 20, 19]);
+
+  // Sorted by time on the way out, since the scorers walk a timeline.
+  for (let i = 1; i < relative.length; i++) assert.ok(relative[i].atMs >= relative[i - 1].atMs);
+});
+
+test('qualifyEvents will not manufacture events out of single presses', () => {
+  const thin = Array.from({ length: 10 }, (_, i) => ({ atMs: i * 1000, presses: 1 }));
+  assert.equal(qualifyEvents(thin, { topPerHour: 6 }).length, 0);
+
+  // floorPresses is the guard, so lowering it lets them through.
+  assert.equal(qualifyEvents(thin, { topPerHour: 6, floorPresses: 1 }).length, 6);
+});
+
+test('windowBlocks splits on pickable windows, not the wall clock', () => {
+  // A long quiet gap must not become a block of its own: blocks are equal
+  // counts of windows, so the gap is simply spanned.
+  const times = [...Array(10).keys()].map(i => i * 1000)
+    .concat([...Array(10).keys()].map(i => 9_000_000 + i * 1000));
+  assert.deepEqual(windowBlocks(times, 10), [9_000_000]);
+  assert.deepEqual(windowBlocks(times, 20), []);
+  assert.equal(windowBlocks(times, 5).length, 3);
 });

@@ -236,3 +236,84 @@ recorder joins streams, so it needs removing at the data level — either by
 joining channels at random times rather than at peak, or by reporting precision
 within fixed stream-position strata so a clock cannot win. Until then, any
 trained number has to be read against `constant`.
+
+## The front-loading was the label threshold, not the recorder
+
+*2026-11-25, same evening*
+
+Four hypotheses, three wrong, which is worth recording so nobody re-tests them.
+
+**Wrong: offline chat.** The recorder stays joined when a stream ends, so the
+guess was that quiet offline stretches were padding the timeline. Fetched every
+channel's archive VODs (`tools/fetch-live-windows.mjs`, 180 broadcast windows
+across 25 channels) and the channels were live for nearly all of it —
+bratishkinoff 6.8h of 7.0h, ohnepixel 6.6h of 7.0h. Gating windows to broadcast
+time is still correct and is now done, because nobody clips an offline channel,
+but it moved the front-loading not at all: 38% in the first fifth, against 36%
+before. Note cohhcarnage publishes no archives at all, so channels with no VOD
+data are left ungated rather than dropped — it has 282 events and deleting the
+best-labelled channel to tidy a denominator would be a bad trade.
+
+**Wrong: we joined at peak and chat cooled off.** Chat is *heavier* late:
+21% of volume in the first fifth and 26% in the last. Message rate cannot
+explain a 36% event share.
+
+**Wrong: label maturation.** The theory was that old moments have had longer to
+accumulate presses. But presses arrive almost immediately — p90 of
+clip-created-minus-moment is **4 minutes**, and only 5.7% of clips are made
+more than two hours after the moment. The ≥3-press share by moment age is
+17.0% / 13.2% / 9.9% / 15.3% / 18.9% across age buckets: no trend.
+
+**Right: the three-press bar is a function of audience size.** Clip presses
+scale with concurrent viewers; chat volume scales *sub*linearly with them,
+because big chats are mostly lurkers and slow mode and rate limits bite. So a
+fixed bar is far easier to clear in a big hour. Measured: the hour the recorder
+joined carried **2.23 qualifying events per 1k windows against 1.02 in the hour
+five hours later, on 20% more chat**. Same chat rate, double the events. The
+bar was reading audience size.
+
+### The fix
+
+Define events the way the metric already asks the question. The metric is
+precision@6/hour — *give me this hour's best moments* — so the labels are now
+the **top 6 moments per block by press count**, where a block is an hour's
+worth of pickable windows rather than a clock hour. Clock hours were tried
+first and were still skewed, because the hour the recorder joins is a partial
+one and giving 35 minutes a full hour's quota inflates its density by half
+again. A floor of 2 presses stops a dead block manufacturing events out of
+single clips.
+
+Event density is now flat in position:
+
+```
+fifths of the recorded span (earliest -> latest)
+qualifying events   16  16  21  30  16  %   (was 36 10 15 20 20)
+events per 1k win  1.20 1.35 1.65 2.06 1.01 (was 2.15 .65 .88 1.37 .90)
+```
+
+### Where the baselines now stand
+
+| scorer | precision | 95% CI | recall |
+|---|---|---|---|
+| random (floor) | 0.060 | [0.05, 0.08] | 0.262 |
+| constant (position) | 0.084 | [0.05, 0.12] | 0.291 |
+| convergenceOnly | 0.077 | [0.05, 0.11] | 0.265 |
+| lightor | 0.062 | [0.03, 0.10] | 0.246 |
+| velocity | 0.101 | [0.06, 0.15] | 0.358 |
+| chatterVelocity | 0.105 | [0.07, 0.15] | 0.399 |
+| **currentHeuristic** | **0.109** | [0.07, 0.16] | 0.412 |
+
+The position baseline's edge over noise fell from 2.0x to 1.4x and its interval
+now overlaps the floor, so position is no longer worth anything much. Three
+scorers clear it: the two rate-based ones and the current heuristic, at roughly
+**1.8x chance**. That is the first number here that is about chat rather than
+about the clock.
+
+Convergence alone still sits at the position baseline, which keeps the open
+worry from Day 2 alive: rate may be doing the work. The rate-controlled
+ablation is still owed.
+
+No recorder change. Join timing contributed, but the bias is neutralised in the
+labels, and restarting a healthy recorder to stagger joins would cost live
+collection to fix something already fixed. The spans lengthen on their own as
+recording continues, which only strengthens this.

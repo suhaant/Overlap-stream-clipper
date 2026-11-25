@@ -14,7 +14,7 @@
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { evaluate, bootstrapCI, DEFAULT_MATCH } from '../src/eval.mjs';
 import { BASELINES, makeLightor, makeRandom } from '../src/baselines.mjs';
-import { loadVideos, eventsFor } from '../src/clipstore.mjs';
+import { loadVideos, eventsFor, qualifyEvents, windowBlocks } from '../src/clipstore.mjs';
 
 const args = process.argv.slice(2);
 const flag = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
@@ -36,7 +36,17 @@ const PER_HOUR = Number(flag('per-hour', 6));
  * Three independent presses is the smallest number that means "the crowd
  * agreed", and it keeps 26% of events.
  */
-const MIN_PRESSES = Number(flag('min-presses', 3));
+const MIN_PRESSES = Number(flag('min-presses', 0));
+/**
+ * Default: the top 6 moments of each channel-hour, which is the same question
+ * precision@6/hour asks. See qualifyEvents in src/clipstore.mjs for why an
+ * absolute press bar was biased toward the busiest hours, and what that was
+ * worth to a scorer that only knew the clock.
+ *
+ * Pass --top-per-hour 0 --min-presses 3 to get the old, biased definition back
+ * for comparison.
+ */
+const TOP_PER_HOUR = Number(flag('top-per-hour', 6));
 const OUT = flag('out', 'data/results.json');
 
 if (!existsSync(DATASET)) {
@@ -59,7 +69,14 @@ for (const [ch, g] of Object.entries(byChannel)) {
   // Only events inside the window we actually have features for can be hit.
   g.allEvents = eventsFor(CLIP_DIR, ch, videos)
     .filter(e => e.atMs >= span.from && e.atMs <= span.to);
-  g.events = g.allEvents.filter(e => e.presses >= MIN_PRESSES);
+  // One block per hour's worth of pickable windows, so each block gets the
+  // same quota of events as the metric gives it picks.
+  const perBlock = Math.max(1, Math.round(g.rows.length / Math.max(g.hours, 1)));
+  g.events = qualifyEvents(g.allEvents, {
+    minPresses: MIN_PRESSES,
+    topPerHour: TOP_PER_HOUR,
+    blocks: TOP_PER_HOUR > 0 ? windowBlocks(g.rows.map(r => r.t), perBlock) : null,
+  });
 }
 
 // A channel with no events in range cannot distinguish any scorer.
@@ -69,7 +86,9 @@ const usable = Object.fromEntries(
 const channels = Object.keys(usable);
 
 console.log(`${rows.length.toLocaleString()} windows, ${channels.length} channels with events in range`);
-console.log(`events require >=${MIN_PRESSES} independent presses\n`);
+console.log(TOP_PER_HOUR > 0
+  ? `events are the top ${TOP_PER_HOUR} moments of each channel-hour by press count\n`
+  : `events require >=${MIN_PRESSES} independent presses\n`);
 for (const ch of channels) {
   const g = usable[ch];
   console.log(`  ${ch.padEnd(20)} ${String(g.rows.length).padStart(6)} windows  ${String(g.events.length).padStart(4)}/${String(g.allEvents.length).padStart(4)} events  ${g.hours.toFixed(1)}h`);
@@ -171,8 +190,8 @@ const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergence
 
 console.log(`\nprecision@${PER_HOUR}/hour, held out by channel, mean over channels`);
 console.log(`anything near ${(chance * 100).toFixed(0)}% is chance\n`);
-console.log(`the bar is "constant", not "random": constant picks the earliest`);
-console.log(`windows, and events are front-loaded, so it is a position baseline\n`);
+console.log(`"random" is the floor; "constant" picks the earliest windows, so it`);
+console.log(`is the position baseline. Beating both is the bar.\n`);
 console.log('scorer'.padEnd(20) + 'precision'.padStart(11) + '95% CI'.padStart(18) + 'recall'.padStart(9) + 'wRecall'.padStart(9));
 for (const name of order) {
   const r = results[name];
