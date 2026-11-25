@@ -12,6 +12,7 @@
     "discover": "node tools/discover-channels.mjs",
     "record-all": "node tools/record-all.mjs",
     "harvest": "node tools/harvest-clips.mjs",
+    "live-windows": "node tools/fetch-live-windows.mjs",
     "check-auth": "node tools/check-auth.mjs",
     "verify-alignment": "node tools/verify-alignment.mjs",
     "measure-lag": "node tools/measure-lag.mjs",
