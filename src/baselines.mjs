@@ -82,7 +82,7 @@ export const LIGHTOR_FEATURES = ['w30_messages', 'w30_meanLength', 'w30_msgLowDi
 export function makeLightor(trainRows) {
   const scaler = fitScaler(trainRows, LIGHTOR_FEATURES);
   const X = trainRows.map(r => applyScaler(scaler, r));
-  const y = trainRows.map(r => r.label);
+  const y = trainRows.map(r => r.y ?? r.label);   // qualified label when the caller set one
   const model = fit(X, y, { epochs: 500, lr: 0.5 });
   const scorer = (r) => predict(model, applyScaler(scaler, r));
   scorer.model = model;

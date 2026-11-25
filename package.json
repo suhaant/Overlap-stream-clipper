@@ -17,7 +17,8 @@
     "verify-alignment": "node tools/verify-alignment.mjs",
     "measure-lag": "node tools/measure-lag.mjs",
     "build-dataset": "node tools/build-dataset.mjs",
-    "evaluate": "node tools/evaluate.mjs"
+    "evaluate": "node tools/evaluate.mjs",
+    "weights": "node tools/weights.mjs"
   },
   "engines": {
     "node": ">=22"

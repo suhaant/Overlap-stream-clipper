@@ -14,7 +14,9 @@
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { evaluate, bootstrapCI, DEFAULT_MATCH } from '../src/eval.mjs';
 import { BASELINES, makeLightor, makeRandom } from '../src/baselines.mjs';
+import { makeLogreg, weightReport, FEATURE_SETS } from '../src/model.mjs';
 import { loadVideos, eventsFor, qualifyEvents, windowBlocks } from '../src/clipstore.mjs';
+import { matchEvent } from '../src/align.mjs';
 
 const args = process.argv.slice(2);
 const flag = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
@@ -48,6 +50,8 @@ const MIN_PRESSES = Number(flag('min-presses', 0));
  */
 const TOP_PER_HOUR = Number(flag('top-per-hour', 6));
 const OUT = flag('out', 'data/results.json');
+/** Matches the dataset builder's own tolerance, so a window means the same thing. */
+const LABEL_TOLERANCE = Number(flag('tolerance', 3));
 
 if (!existsSync(DATASET)) {
   console.error(`${DATASET} not found. Run: npm run build-dataset`);
@@ -77,6 +81,15 @@ for (const [ch, g] of Object.entries(byChannel)) {
     topPerHour: TOP_PER_HOUR,
     blocks: TOP_PER_HOUR > 0 ? windowBlocks(g.rows.map(r => r.t), perBlock) : null,
   });
+
+  // Relabel against the qualified events. The dataset's own `label` marks any
+  // clip press at all, which was the right thing to store -- it does not bake
+  // a threshold into the data -- but training on "somebody pressed clip" while
+  // scoring on "this block's best moments" would be answering a different
+  // question than the one being measured. Trained scorers use `y`.
+  for (const r of g.rows) {
+    r.y = matchEvent(r.t, g.events, { toleranceSec: LABEL_TOLERANCE }) ? 1 : 0;
+  }
 }
 
 // A channel with no events in range cannot distinguish any scorer.
@@ -132,7 +145,7 @@ function evaluateTrained(makeScorer) {
   const perChannel = [];
   for (const ch of channels) {
     const train = channels.filter(c => c !== ch).flatMap(c => usable[c].rows);
-    if (train.length < 100 || !train.some(r => r.label === 1)) continue;
+    if (train.length < 100 || !train.some(r => r.y === 1)) continue;
     const scorer = makeScorer(train);
     const one = evaluate({ [ch]: usable[ch] }, scorer, { perHour: PER_HOUR });
     perChannel.push(...one.perChannel);
@@ -149,6 +162,15 @@ for (const [name, fn] of Object.entries(BASELINES)) {
   results[name] = evaluate(usable, fn, { perHour: PER_HOUR });
 }
 results.lightor = evaluateTrained(makeLightor);
+results.logreg = evaluateTrained(makeLogreg);
+
+// The ablation: the same model, the same folds, different inputs.
+results.logregRate = evaluateTrained(
+  rows => makeLogreg(rows, { features: FEATURE_SETS.rate() }));
+results.logregShares = evaluateTrained(
+  rows => makeLogreg(rows, { features: FEATURE_SETS.shares() }));
+results.logregRateConv = evaluateTrained(
+  rows => makeLogreg(rows, { features: FEATURE_SETS.rateAndConvergence() }));
 
 /**
  * The measured floor: the same harness, run on noise, averaged over seeds.
@@ -186,7 +208,7 @@ results.random = (() => {
   };
 })();
 
-const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic'];
+const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic', 'logregRate', 'logregShares', 'logregRateConv', 'logreg'];
 
 console.log(`\nprecision@${PER_HOUR}/hour, held out by channel, mean over channels`);
 console.log(`anything near ${(chance * 100).toFixed(0)}% is chance\n`);
@@ -213,6 +235,11 @@ writeFileSync(OUT, JSON.stringify({
   results: Object.fromEntries(Object.entries(results).map(([k, v]) => [k, {
     precision: v.precision, recall: v.recall, weightedRecall: v.weightedRecall,
     channels: v.channels, ci: bootstrapCI(v.perChannel),
+    // Kept so the spread behind the mean is inspectable: 14 channels is few
+    // enough that one of them can carry a headline number on its own.
+    perChannel: v.perChannel.map(c => ({
+      channel: c.channel, precision: c.precision, recall: c.recall, events: c.events,
+    })),
   }])),
 }, null, 2) + '\n');
 console.log(`\n-> ${OUT}`);
