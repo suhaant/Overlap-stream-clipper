@@ -1,0 +1,233 @@
+{
+  "note": "Discovered by tools/discover-channels.mjs. Set record:false to skip one.",
+  "game": "Grand Theft Auto VI",
+  "gameId": "1867279146",
+  "updatedAt": "2026-11-25T14:30:35.801Z",
+  "channels": [
+    {
+      "login": "ohnepixel",
+      "userId": "43683025",
+      "peakViewers": 23354,
+      "lastSeenLive": "2026-11-25T14:30:35.800Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "squeezie",
+      "userId": "52130765",
+      "peakViewers": 15521,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "fr"
+    },
+    {
+      "login": "bratishkinoff",
+      "userId": "99899949",
+      "peakViewers": 13810,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "cohhcarnage",
+      "userId": "26610234",
+      "peakViewers": 11141,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "domingo",
+      "userId": "40063341",
+      "peakViewers": 8967,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "fr"
+    },
+    {
+      "login": "sasavot",
+      "userId": "89132304",
+      "peakViewers": 7939,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "blusewilly_retry",
+      "userId": "24765850",
+      "peakViewers": 7538,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "zh"
+    },
+    {
+      "login": "mobilmobil",
+      "userId": "29518572",
+      "peakViewers": 6857,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "zh"
+    },
+    {
+      "login": "kr1stw",
+      "userId": "170869845",
+      "peakViewers": 6272,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "zh"
+    },
+    {
+      "login": "frametamer666",
+      "userId": "663995665",
+      "peakViewers": 5714,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "imantado",
+      "userId": "476005292",
+      "peakViewers": 5677,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "es"
+    },
+    {
+      "login": "nickmercs",
+      "userId": "15564828",
+      "peakViewers": 4920,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "kyedae",
+      "userId": "445529741",
+      "peakViewers": 4205,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "blackufa",
+      "userId": "98742675",
+      "peakViewers": 3822,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "gotaga",
+      "userId": "24147592",
+      "peakViewers": 3625,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "fr"
+    },
+    {
+      "login": "thetremba",
+      "userId": "41894099",
+      "peakViewers": 3427,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "uk"
+    },
+    {
+      "login": "singsing",
+      "userId": "21390470",
+      "peakViewers": 3313,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "voodoosh",
+      "userId": "87481167",
+      "peakViewers": 3295,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "dmitry_bale",
+      "userId": "130313947",
+      "peakViewers": 3171,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "zerkaa",
+      "userId": "13884994",
+      "peakViewers": 2868,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "ricfazeres",
+      "userId": "32373176",
+      "peakViewers": 2719,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "pt"
+    },
+    {
+      "login": "rumathra",
+      "userId": "41567638",
+      "peakViewers": 2593,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "de"
+    },
+    {
+      "login": "loya",
+      "userId": "541075232",
+      "peakViewers": 2401,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    },
+    {
+      "login": "slaimxo1",
+      "userId": "406781509",
+      "peakViewers": 2256,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "ru"
+    },
+    {
+      "login": "elajjaz",
+      "userId": "26921830",
+      "peakViewers": 2173,
+      "lastSeenLive": "2026-11-25T14:30:35.801Z",
+      "lastSeenGame": "Grand Theft Auto VI",
+      "record": true,
+      "language": "en"
+    }
+  ]
+}

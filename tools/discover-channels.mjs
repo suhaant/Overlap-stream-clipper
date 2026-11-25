@@ -65,6 +65,10 @@ async function main() {
       peakViewers: Math.max(existing.peakViewers ?? 0, s.viewerCount),
       lastSeenLive: new Date().toISOString(),
       lastSeenGame: s.gameName,
+      // Kept so the corpus can be split by language later. The claim that
+      // convergence is language-independent is testable only if the data
+      // spans languages, and this roster happens to.
+      language: s.language,
       record: existing.record ?? true,
     });
   }
