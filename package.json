@@ -12,7 +12,8 @@
     "discover": "node tools/discover-channels.mjs",
     "record-all": "node tools/record-all.mjs",
     "harvest": "node tools/harvest-clips.mjs",
-    "check-auth": "node tools/check-auth.mjs"
+    "check-auth": "node tools/check-auth.mjs",
+    "verify-alignment": "node tools/verify-alignment.mjs"
   },
   "engines": {
     "node": ">=22"
