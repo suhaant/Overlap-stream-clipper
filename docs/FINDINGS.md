@@ -317,3 +317,86 @@ No recorder change. Join timing contributed, but the bias is neutralised in the
 labels, and restarting a healthy recorder to stagger joins would cost live
 collection to fix something already fixed. The spans lengthen on their own as
 recording continues, which only strengthens this.
+
+## Day 4: the model works, and the thesis does not
+
+*2026-11-25, late*
+
+A logistic regression over channel-relative features, fit leave-one-channel-out
+on 20 channels. The relative part is not a detail: the benchmark holds out
+whole channels, ohnepixel sent 121k messages in the recorded span and voodoosh
+5k, so a model handed raw counts learns audience size — the one thing certain
+not to transfer. Every unbounded feature enters as a ratio to its own 30s
+baseline, measured causally from chat before *t*. A test pins the invariance: a
+3× spike must look identical in a chat of 20 and a chat of 20,000.
+
+Found and fixed a real bug on the way in. `msgRate` is messages divided by
+window length, so `msgRate_r4` is algebraically identical to `messages_r4`.
+Including both put the same feature in twice — the first fit gave
+`messages_r10` 0.659 and `msgRate_r10` 0.658 — quietly doubling rate's weight
+against every other signal, which is the exact confound this benchmark exists
+to expose.
+
+### The ablation
+
+The same model, the same folds, different inputs. This is what hand-written
+scorers could never settle, because they differ in their weights as well as
+their inputs.
+
+| scorer | inputs | precision | 95% CI | recall | wRecall |
+|---|---|---|---|---|---|
+| **logregRate** | rate only | **0.116** | [0.08, 0.16] | 0.430 | 0.431 |
+| logregRateConv | rate + agreement | 0.114 | [0.08, 0.16] | 0.442 | **0.452** |
+| currentHeuristic | hand-written | 0.109 | [0.07, 0.16] | 0.412 | 0.411 |
+| logreg | all 43 | 0.106 | [0.07, 0.15] | 0.407 | 0.415 |
+| logregShares | everything but rate | 0.079 | [0.05, 0.12] | 0.328 | 0.329 |
+| constant | position baseline | 0.084 | [0.05, 0.12] | 0.291 | 0.302 |
+| random | floor | 0.060 | [0.05, 0.08] | 0.262 | 0.265 |
+
+**Convergence adds nothing.** Rate alone is the best scorer in the table. Add
+the crowd-agreement features and precision does not move (0.114 vs 0.116, fully
+overlapping). Add all 43 features and it gets *worse* — 0.106 — which is what
+43 features and 20 training channels should be expected to do. Strip rate out
+and the remaining 37 features barely clear the position baseline.
+
+This answers the worry logged on Day 2, and answers it against the thesis. The
+intellectual core of this project was that clip-worthy moments are where a
+crowd *converges on the same words*. On this data that is not where the signal
+is. The signal is that more distinct people start talking, in shorter messages.
+
+The one thing agreement buys is weighted recall: 0.452 against 0.431, the best
+in the table. So convergence may help rank the *heavily*-clipped moments above
+the thinly-clipped ones, without helping find them. That is a hint, not a
+result, and the interval does not support more.
+
+### What the model actually is
+
+```
+rate -- 6 features, bias -1.025
+  chatters_r10               1.241
+  messages_r10               1.060
+  meanLength_r10            -0.430
+  chatters_r4                0.278
+```
+
+Three things, in plain words: **more distinct people talking in the last ten
+seconds than the last thirty, saying shorter things than usual.** The 10s
+window dominates the 4s one, which says the reaction window is about ten
+seconds — consistent with the −3s clip-start-to-chat-peak measurement, and a
+useful number in its own right.
+
+### Honest caveats
+
+**The mean hides a lot.** Per-channel precision runs from gotaga 0.462 (7
+events, 2.1h) to loya 0.000. The high scores sit on thin channels. On the three
+best-labelled channels it is elajjaz **0.211** (36 events), ohnepixel **0.167**
+(30), cohhcarnage **0.114** (31) — 2–3.5× chance, which is the number worth
+quoting, not the 0.116 mean.
+
+**The feature set was chosen on the reported folds.** Rate-only, rate+agreement
+and all-features span 0.106–0.116, so the defensible claim is ≈0.11, not 0.116.
+A clean number needs a held-out channel group that no variant was selected on.
+
+**One day of recording.** Six hours per channel, 20 channels, 4,023 clip
+events. Everything here should be re-run once the span covers whole broadcasts
+across several days.
