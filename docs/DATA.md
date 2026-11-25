@@ -21,9 +21,10 @@ Then at https://dev.twitch.tv/console/apps:
 1. Applications → **Register Your Application**.
 2. **Name** — must be unique across every Twitch application, so a generic name
    gets rejected. Something like `overlap-stream-clipper-research` works.
-3. **OAuth Redirect URLs** — `http://localhost:3000`, then click **Add**. The
-   client-credentials grant never redirects anywhere, so the value is unused;
-   the form wants one regardless.
+3. **OAuth Redirect URLs** — `https://localhost:3000`, then click **Add**. It must
+   be HTTPS: the form rejects `http://` outright, even for localhost. The value is
+   never visited, because the client-credentials grant does not redirect, but
+   the form requires a well-formed one.
 4. **Category** — Application Integration.
 5. Captcha, then **Create**.
 6. **Manage** on the new app → copy the **Client ID**, then **New Secret** and
