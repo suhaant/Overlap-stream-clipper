@@ -123,3 +123,57 @@ when vision becomes worth its compute.
 The 157 quiet channels are their own finding. Most channels in the roster are
 below the viewer threshold where this method works, which matches LIGHTOR's
 stated limit of ~500 messages an hour and ~100 viewers.
+
+## 25 Nov — the harness works, the data does not yet support a result
+
+Day 3 built `src/eval.mjs`, five baselines and a LIGHTOR reimplementation.
+The honest outcome is that **no baseline can be distinguished from chance
+yet**, and finding that out is what the harness is for.
+
+### The first version of the metric measured nothing
+
+Initial run, every clustered clip treated as an event:
+
+| scorer | precision@6/h |
+| --- | --- |
+| constant | **0.266** |
+| velocity | 0.307 |
+| currentHeuristic | 0.276 |
+| convergenceOnly | 0.255 |
+
+A scorer returning the same number for every window reached 0.266. That is
+not a baseline being surprisingly good, it is the metric being broken: at 25
+events an hour against a 50-second acceptance window, **35% of the timeline
+counts as correct**, so random guessing scores about a third.
+
+### The label definition was the problem
+
+58% of clustered events are a single press, median 2 total views. That is one
+person saving a URL, not a moment the audience agreed on. Scoring against them
+is wrong on both counts: it inflates event density until the metric cannot
+discriminate, and it asks the model to find things nobody watched.
+
+Events now require **at least three independent presses**, which keeps 26% of
+them and drops the chance rate from 35% to **7.6%**. The evaluator prints that
+figure next to the table, so a result near it cannot be mistaken for a finding.
+
+### Current standing, and it is not a result
+
+With the stricter definition only 3 channels have qualifying events in the
+recorded span, 10 events between them. Every confidence interval spans zero to
+a quarter. No number from this run should be quoted, including the ones that
+happen to look good.
+
+What it does establish: the harness responds correctly to a label definition
+changing, the chance rate is computed and displayed, and matching is
+asymmetric so a detector firing 20 seconds before the human counts as right.
+Nine tests pin that behaviour, including that an oracle scores 1.0, a blind
+scorer does not, and one eruption cannot claim six hits.
+
+### What would make it a result
+
+Event rate on a qualifying channel is roughly 6 three-press events an hour. To
+get confidence intervals worth printing, something like 200 events across 8 or
+more channels, which is on the order of 30 to 40 recorded channel-hours on
+channels above the viewer floor. The recorder produces that in a few days, and
+only ohnepixel, elajjaz and a handful of others contribute.
