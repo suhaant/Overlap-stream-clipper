@@ -15,6 +15,8 @@ import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { evaluate, bootstrapCI, DEFAULT_MATCH } from '../src/eval.mjs';
 import { BASELINES, makeLightor, makeRandom } from '../src/baselines.mjs';
 import { makeLogreg, weightReport, FEATURE_SETS } from '../src/model.mjs';
+import { OnlineDetector, replayRow, calibrateThreshold } from '../src/online.mjs';
+import { precisionAtK, weightedRecall } from '../src/eval.mjs';
 import { loadVideos } from '../src/clipstore.mjs';
 import { labelChannels } from '../src/labelled.mjs';
 
@@ -179,7 +181,62 @@ results.random = (() => {
   };
 })();
 
-const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic', 'logregRate', 'logregShares', 'logregRateConv', 'logreg'];
+/**
+ * The online detector, held out by channel like everything else.
+ *
+ * Every other row in this table is scored by offline peak-picking: sort the
+ * hour's windows, take the best six. That cannot be run live -- it needs the
+ * end of the hour to rank its beginning. This row is the real firing rule,
+ * deciding at t from what came before t, and the gap between it and logreg is
+ * the honest cost of having to commit in real time.
+ *
+ * Calibrated on the training folds only. Fitting the threshold on the channel
+ * being scored would be the same leak as fitting the weights on it.
+ */
+function evaluateOnline(makeScorer, features) {
+  const perChannel = [];
+  const rates = [];
+
+  for (const ch of channels) {
+    const trainChannels = channels.filter(c => c !== ch);
+    const train = trainChannels.flatMap(c => usable[c].rows);
+    if (train.length < 100 || !train.some(r => r.y === 1)) continue;
+
+    const scorer = makeScorer(train, features);
+    const heldOutTrain = Object.fromEntries(trainChannels.map(c => [c, usable[c]]));
+    const { threshold } = calibrateThreshold(heldOutTrain, scorer, { firesPerHour: PER_HOUR });
+
+    const g = usable[ch];
+    const det = new OnlineDetector(scorer, threshold);
+    const detections = [];
+    for (const r of g.rows) {
+      const fired = replayRow(det, r);
+      if (fired) detections.push({ t: fired.t, score: fired.score });
+    }
+    rates.push(g.hours ? detections.length / g.hours : 0);
+
+    // No k cut: the detector already chose how often to fire. Capping it at
+    // the benchmark's k would hide over-firing, which is precisely the failure
+    // mode a live system has and an offline ranking does not.
+    const p = precisionAtK(detections, g.events, { k: detections.length });
+    perChannel.push({
+      channel: ch, hours: g.hours, events: g.events.length, fires: detections.length, ...p,
+      weightedRecall: weightedRecall(detections, g.events, { k: detections.length }),
+    });
+  }
+
+  const mean = (k) => perChannel.length ? perChannel.reduce((s, r) => s + r[k], 0) / perChannel.length : 0;
+  return {
+    perChannel, channels: perChannel.length,
+    precision: mean('precision'), recall: mean('recall'), weightedRecall: mean('weightedRecall'),
+    firesPerHour: rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : 0,
+  };
+}
+
+results.online = evaluateOnline(
+  (rows, features) => makeLogreg(rows, { features }), FEATURE_SETS.rateAndConvergence());
+
+const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic', 'logregRate', 'logregShares', 'logregRateConv', 'logreg', 'online'];
 
 console.log(`\nprecision@${PER_HOUR}/hour, held out by channel, mean over channels`);
 console.log(`anything near ${(chance * 100).toFixed(0)}% is chance\n`);
@@ -210,7 +267,12 @@ writeFileSync(OUT, JSON.stringify({
     // enough that one of them can carry a headline number on its own.
     perChannel: v.perChannel.map(c => ({
       channel: c.channel, precision: c.precision, recall: c.recall, events: c.events,
+      ...(c.fires === undefined ? {} : { fires: c.fires }),
     })),
   }])),
 }, null, 2) + '\n');
+if (results.online?.channels) {
+  console.log(`\nonline fires ${results.online.firesPerHour.toFixed(2)}/hour ` +
+    `against a budget of ${PER_HOUR}; it decides at t, every row above ranks the whole hour first`);
+}
 console.log(`\n-> ${OUT}`);

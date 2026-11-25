@@ -20,6 +20,7 @@
     "evaluate": "node tools/evaluate.mjs",
     "weights": "node tools/weights.mjs",
     "train": "node tools/train.mjs",
+    "measure-latency": "node tools/measure-latency.mjs",
     "refresh": "npm run live-windows && npm run harvest -- --days 3 && npm run build-dataset && npm run evaluate"
   },
   "engines": {

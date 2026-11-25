@@ -400,3 +400,77 @@ A clean number needs a held-out channel group that no variant was selected on.
 **One day of recording.** Six hours per channel, 20 channels, 4,023 clip
 events. Everything here should be re-run once the span covers whole broadcasts
 across several days.
+
+## Day 5: the detector runs, and online is not the same problem as offline
+
+*2026-11-25, night*
+
+`tools/evaluate.mjs` peak-picks offline — sort the hour's windows by score,
+take the best six, suppress neighbours. That is a fair way to measure a scorer
+and an impossible way to run one: it needs the end of the hour to rank the
+beginning. So the live rule is its own code (`src/online.mjs`) and gets its own
+row in the table.
+
+The rule is **threshold, settle, fire**. Cross the threshold and you are armed,
+not finished: the crossing is the start of a reaction, and firing there cuts
+before the thing people are reacting to has landed. So track the maximum for up
+to 8s and commit at it. Then 45s refractory, the same suppression width the
+benchmark uses. Settling is nearly free because the clip is cut retroactively
+from the rolling video buffer — the detector is choosing a timestamp in the
+recent past, not deciding whether to start recording.
+
+The threshold is **measured, not chosen**. Training upweights the positive
+class so the model does not collapse to predicting zero, which shifts every
+score up by an amount depending on the class ratio, so no fixed probability
+cutoff survives a retrain. The real firing rule is replayed over the training
+folds and the threshold binary-searched until it fires six times per recorded
+hour — the same budget the benchmark gives itself. Calibration happens on the
+training folds only; fitting it on the scored channel would be the same leak as
+fitting the weights there.
+
+### What it costs to decide in real time
+
+| | precision | 95% CI | recall |
+|---|---|---|---|
+| logregRateConv (offline ranking) | 0.141 | [0.10, 0.19] | 0.432 |
+| **online (decides at t)** | **0.165** | [0.11, 0.23] | 0.353 |
+
+The mean says the live rule is *better*, which is not the expected result and
+is mostly an artifact of averaging over channels. Split by how well-labelled a
+channel is:
+
+```
+                      online   offline   fires/channel
+>=20 events (n=5)      0.153     0.175            44.0
+ <20 events (n=15)     0.168     0.129            27.8
+```
+
+On the five channels we actually trust, the causal detector costs about **13%
+relative precision** — 0.153 against 0.175 — which is the honest number. The
+mean is flattered by thin channels where it fires rarely. What it buys is
+selectivity: it fires 5.82 times an hour rather than being forced to produce
+six picks whether or not six moments existed.
+
+### Latency, on 176,566 scored ticks of real recorded chat
+
+```
+compute per scored tick    p50 0.14ms   p90 0.41ms   p99 0.86ms   max 2.34ms
+chosen moment to commit    p50 3.6s     p90 8.8s     max 18.8s
+```
+
+At p99 that is roughly **1,100 channels per core** before ticks queue. This is
+the number that matters commercially: chat-only detection is cheap enough to
+run on everything live simultaneously, which is not true of anything that
+decodes video.
+
+Found a real bug measuring it. Max decision latency was **2,011 seconds**. When
+chat goes too quiet to build a row, `advance` returned early — so an armed
+detector stayed armed until chat came back, then fired on a half-hour-old peak.
+A settle-expiry check in the quiet branch fixed it; max is now 18.8s, and a
+test pins it.
+
+`watch.mjs --model` runs the trained path, and without the flag the heuristic
+still runs. Both stay because the benchmark cannot separate them: 0.130 against
+0.141 with intervals that overlap almost entirely. Picking a winner on that gap
+would be reading noise. Where they *disagree* is the interesting comparison and
+it needs both to exist.

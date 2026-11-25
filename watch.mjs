@@ -5,6 +5,8 @@ import { classify, score } from './src/classify.mjs';
 import { chatHighlights } from './src/caption.mjs';
 import { StreamBuffer } from './src/buffer.mjs';
 import { renderClip } from './src/render.mjs';
+import { OnlineDetector, toCandidate } from './src/online.mjs';
+import { loadModel, scorerFor } from './src/score.mjs';
 
 /**
  * End to end: watch live chat, detect the moment, cut it out of the rolling
@@ -12,8 +14,39 @@ import { renderClip } from './src/render.mjs';
  *
  *   node watch.mjs stableronaldo,lacy 420
  */
-const channels = (process.argv[2] || 'stableronaldo').split(',');
-const runFor = Number(process.argv[3] || 420);
+const argv = process.argv.slice(2).filter(a => a !== '--model');
+const channels = (argv[0] || 'stableronaldo').split(',');
+const runFor = Number(argv[1] || 420);
+
+/**
+ * --model swaps the hand-written spike detector for the trained one.
+ *
+ * Both stay runnable because the benchmark cannot separate them: the heuristic
+ * scores 0.130 and the model 0.141, with intervals that overlap almost
+ * entirely. Picking a winner on that gap would be reading noise. What the two
+ * paths disagree about -- which moments each fires on -- is more informative
+ * than the gap, and needs both to exist to be looked at.
+ */
+const USE_MODEL = process.argv.includes('--model');
+
+let scoreRow = null, fireThreshold = null;
+if (USE_MODEL) {
+  let model;
+  try {
+    model = loadModel();
+  } catch (e) {
+    console.error(`${e.message}`);
+    process.exit(1);
+  }
+  scoreRow = scorerFor(model);
+  fireThreshold = model.online?.threshold;
+  if (!Number.isFinite(fireThreshold)) {
+    console.error('model has no calibrated firing threshold. Retrain: npm run train');
+    process.exit(1);
+  }
+  console.log(`using the trained model: ${model.featureSet}, ${model.keys.length} features, ` +
+    `fire above ${fireThreshold.toFixed(4)} (${model.online.measuredFiresPerHour}/hour when measured)`);
+}
 
 /** The moment is in the past by the time chat finishes reacting; let the buffer catch up. */
 const SETTLE_MS = 15000;
@@ -56,20 +89,15 @@ for (const ch of channels) {
     continue;
   }
 
-  const det = new SpikeDetector().start();
   const chat = new TwitchChat(ch).connect();
-  chat.on('message', (m) => det.ingest(m));
   chat.on('error', () => {});
 
-  det.on('spike:rejected', (s) =>
-    console.log(`[${ch}] – rejected (shape ${s.shape.shape}, conversation not reaction)`));
-
-  det.on('spike', (spike) => {
-    const cls = classify(spike.window);
-    const sc = score(spike, cls);
-    const lines = chatHighlights(spike.window);
-    console.log(`\n[${ch}] ● MOMENT ${cls.kind} ${sc}/100 · z=${spike.peakZ} · ` +
-      `${spike.peakUniqueChatters} chatters · shape ${spike.shape.shape}`);
+  /** Shared tail: both detectors hand a candidate plus its chat window here. */
+  const onMoment = (spike, window, headline) => {
+    const cls = classify(window);
+    const sc = USE_MODEL ? Math.round(spike.modelScore * 100) : score(spike, cls);
+    const lines = chatHighlights(window);
+    console.log(`\n[${ch}] ● MOMENT ${cls.kind} ${sc}/100 · ${headline}`);
     console.log(`[${ch}]   chat: ${lines.join(' | ')}`);
 
     setTimeout(async () => {
@@ -99,7 +127,31 @@ for (const ch of channels) {
         console.log(`[${ch}]   render failed: ${e.message.slice(0, 200)}`);
       }
     }, SETTLE_MS);
-  });
+  };
+
+  if (USE_MODEL) {
+    const det = new OnlineDetector(scoreRow, fireThreshold);
+    const recent = [];
+    chat.on('message', (m) => {
+      det.ingest(m);
+      recent.push(m);
+      while (recent.length && recent[0].t < m.t - 60_000) recent.shift();
+
+      const fired = det.tick(m.t);
+      if (!fired) return;
+      const cand = toCandidate(fired);
+      const window = recent.filter(x => x.t >= cand.onsetAt - 2000 && x.t <= cand.peakAt + 5000);
+      onMoment(cand, window,
+        `model ${cand.modelScore} · decided ${(cand.decisionLagMs / 1000).toFixed(1)}s after the peak`);
+    });
+  } else {
+    const det = new SpikeDetector().start();
+    chat.on('message', (m) => det.ingest(m));
+    det.on('spike:rejected', (s) =>
+      console.log(`[${ch}] – rejected (shape ${s.shape.shape}, conversation not reaction)`));
+    det.on('spike', (spike) => onMoment(spike, spike.window,
+      `z=${spike.peakZ} · ${spike.peakUniqueChatters} chatters · shape ${spike.shape.shape}`));
+  }
 
   process.on('exit', () => buffer.stop());
 }

@@ -20,6 +20,8 @@ import { loadVideos } from '../src/clipstore.mjs';
 import { labelChannels } from '../src/labelled.mjs';
 import { makeLogreg, FEATURE_SETS, MODEL_FEATURES } from '../src/model.mjs';
 import { SCALES, MIN_MESSAGES } from '../src/windowrow.mjs';
+import { calibrateThreshold, DEFAULTS as ONLINE_DEFAULTS } from '../src/online.mjs';
+import { scorerFor } from '../src/score.mjs';
 
 const args = process.argv.slice(2);
 const flag = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
@@ -51,6 +53,24 @@ if (!positives) {
 const keys = FEATURE_SETS[SET]();
 const scorer = makeLogreg(train, { features: keys });
 
+/**
+ * The operating point, measured rather than guessed.
+ *
+ * Training upweights the positive class so the model does not collapse to
+ * predicting zero, which shifts every score upward by an amount depending on
+ * the class ratio -- so no fixed probability cutoff is meaningful across
+ * retrains. Instead the real firing rule is replayed over the training rows
+ * and the threshold binary-searched until it fires at the rate the benchmark
+ * allows itself: six per recorded hour.
+ */
+const FIRES_PER_HOUR = Number(flag('fires-per-hour', 6));
+const provisional = {
+  scaler: { keys: scorer.scaler.keys, min: scorer.scaler.min, max: scorer.scaler.max },
+  weights: scorer.model.w, bias: scorer.model.b,
+};
+const { threshold, firesPerHour } = calibrateThreshold(
+  usable, scorerFor(provisional), { firesPerHour: FIRES_PER_HOUR });
+
 const artifact = {
   version: 1,
   createdAt: new Date().toISOString(),
@@ -62,6 +82,15 @@ const artifact = {
   // The live path has to rebuild identical rows, so the shape travels with
   // the weights rather than being assumed to match.
   rowSpec: { scales: SCALES, minMessages: MIN_MESSAGES, features: MODEL_FEATURES },
+  // How to fire, not just how to score. Carried with the weights because the
+  // threshold is only meaningful for the model it was measured on.
+  online: {
+    threshold,
+    measuredFiresPerHour: Number(firesPerHour.toFixed(2)),
+    targetFiresPerHour: FIRES_PER_HOUR,
+    settleMs: ONLINE_DEFAULTS.settleMs,
+    refractorySec: ONLINE_DEFAULTS.refractorySec,
+  },
   trainedOn: {
     channels: channels.length,
     channelNames: channels,
@@ -77,5 +106,7 @@ console.log(`feature set   ${SET} (${keys.length} features)`);
 console.log(`trained on    ${channels.length} channels, ${train.length.toLocaleString()} rows, ` +
   `${positives.toLocaleString()} positive (${(100 * positives / train.length).toFixed(2)}%)`);
 console.log(`bias          ${scorer.model.b.toFixed(4)}`);
+console.log(`fire at       score > ${threshold.toFixed(4)} ` +
+  `(${firesPerHour.toFixed(2)}/hour measured, target ${FIRES_PER_HOUR})`);
 console.log(`\n-> ${OUT}`);
 console.log('This model has no honest score attached. Run: npm run evaluate');
