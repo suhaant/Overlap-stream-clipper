@@ -13,7 +13,9 @@
     "record-all": "node tools/record-all.mjs",
     "harvest": "node tools/harvest-clips.mjs",
     "check-auth": "node tools/check-auth.mjs",
-    "verify-alignment": "node tools/verify-alignment.mjs"
+    "verify-alignment": "node tools/verify-alignment.mjs",
+    "measure-lag": "node tools/measure-lag.mjs",
+    "build-dataset": "node tools/build-dataset.mjs"
   },
   "engines": {
     "node": ">=22"
