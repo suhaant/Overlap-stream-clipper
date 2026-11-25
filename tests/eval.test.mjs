@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { peakPick, precisionAtK, weightedRecall, evaluate, bootstrapCI } from '../src/eval.mjs';
+import { makeRandom } from '../src/baselines.mjs';
 
 const at = (sec, score) => ({ t: sec * 1000, score });
 const ev = (sec, presses = 1) => ({ atMs: sec * 1000, presses });
@@ -93,4 +94,28 @@ test('the bootstrap widens as channels shrink and refuses a single channel', () 
   const tight = bootstrapCI(many);
   assert.ok((wide.hi - wide.lo) > (tight.hi - tight.lo), 'fewer channels must give a wider interval');
   assert.ok(Number.isNaN(bootstrapCI([{ precision: 1 }]).lo));
+});
+
+test('makeRandom is deterministic in (t, seed) and independent across seeds', () => {
+  const a = makeRandom(7);
+  const b = makeRandom(7);
+  const c = makeRandom(8);
+  const rows = Array.from({ length: 500 }, (_, i) => ({ t: 1_700_000_000_000 + i * 1000 }));
+
+  // Determinism matters: the harness may score rows in any order, and a
+  // stateful PRNG would make the measured floor depend on that order.
+  for (const r of rows) assert.equal(a(r), b(r));
+  assert.ok(rows.some(r => a(r) !== c(r)), 'different seeds must give different noise');
+
+  for (const r of rows) {
+    const v = a(r);
+    assert.ok(v >= 0 && v < 1, `score out of range: ${v}`);
+  }
+
+  // Roughly uniform, or it is not a floor. Each tenth should hold ~50 of 500;
+  // 15 is loose enough never to flake and tight enough to catch a hash that
+  // collapses.
+  const tenths = new Array(10).fill(0);
+  for (const r of rows) tenths[Math.floor(a(r) * 10)]++;
+  for (const n of tenths) assert.ok(n > 15, `uneven noise: ${tenths.join(',')}`);
 });

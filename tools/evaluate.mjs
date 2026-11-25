@@ -12,8 +12,8 @@
  */
 
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
-import { evaluate, bootstrapCI } from '../src/eval.mjs';
-import { BASELINES, makeLightor } from '../src/baselines.mjs';
+import { evaluate, bootstrapCI, DEFAULT_MATCH } from '../src/eval.mjs';
+import { BASELINES, makeLightor, makeRandom } from '../src/baselines.mjs';
 import { loadVideos, eventsFor } from '../src/clipstore.mjs';
 
 const args = process.argv.slice(2);
@@ -78,20 +78,34 @@ for (const ch of channels) {
 /**
  * The chance rate, stated so the table is readable.
  *
- * Any detection landing inside an event's acceptance window counts, so the
- * share of the timeline those windows cover is what a scorer with no
- * information achieves. A result near this number means nothing, however
- * respectable it looks on its own.
+ * A scorer can only pick a window that exists, and windows exist only where
+ * there was chat. Measuring event coverage against wall-clock hours therefore
+ * understates chance badly on any channel that goes quiet: the first version of
+ * this printed 2.5% while a constant scorer reached 7.3%, which made every
+ * baseline look three times better than nothing when none of them were.
+ *
+ * So: the share of pickable windows falling inside some event's acceptance
+ * window, averaged over channels like every other number in the table. That is
+ * what one uninformed pick is worth.
  */
 const chance = (() => {
-  let covered = 0, total = 0;
+  const { maxLeadSec, graceSec } = DEFAULT_MATCH;
+  const per = [];
   for (const g of Object.values(usable)) {
-    covered += g.events.length * 50;
-    total += g.hours * 3600;
+    if (!g.rows.length || !g.events.length) continue;
+    let inside = 0;
+    for (const r of g.rows) {
+      const hit = g.events.some(e => {
+        const lead = (e.atMs - r.t) / 1000;
+        return lead <= maxLeadSec && lead >= -graceSec;
+      });
+      if (hit) inside++;
+    }
+    per.push(inside / g.rows.length);
   }
-  return total ? Math.min(covered / total, 1) : 0;
+  return per.length ? per.reduce((a, b) => a + b, 0) / per.length : 0;
 })();
-console.log(`\nchance rate (share of timeline inside an acceptance window): ${(chance * 100).toFixed(1)}%`);
+console.log(`\nchance rate (share of pickable windows inside an acceptance window): ${(chance * 100).toFixed(1)}%`);
 if (!channels.length) { console.error('\nnothing to evaluate yet.'); process.exit(1); }
 
 /** Leave-one-channel-out: fit on every other channel, score on this one. */
@@ -117,10 +131,48 @@ for (const [name, fn] of Object.entries(BASELINES)) {
 }
 results.lightor = evaluateTrained(makeLightor);
 
-const order = ['constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic'];
+/**
+ * The measured floor: the same harness, run on noise, averaged over seeds.
+ *
+ * Averaged per channel first, so the bootstrap CI below is still over channels
+ * -- the thing that varies in the claim -- and not over seeds, which is a
+ * number we chose.
+ */
+const RANDOM_SEEDS = 20;
+results.random = (() => {
+  const acc = new Map();
+  for (let seed = 1; seed <= RANDOM_SEEDS; seed++) {
+    const run = evaluate(usable, makeRandom(seed), { perHour: PER_HOUR });
+    for (const r of run.perChannel) {
+      const a = acc.get(r.channel)
+        ?? { channel: r.channel, precision: 0, recall: 0, weightedRecall: 0, n: 0 };
+      a.precision += r.precision;
+      a.recall += r.recall;
+      a.weightedRecall += r.weightedRecall;
+      a.n++;
+      acc.set(r.channel, a);
+    }
+  }
+  const perChannel = [...acc.values()].map(a => ({
+    channel: a.channel,
+    precision: a.precision / a.n,
+    recall: a.recall / a.n,
+    weightedRecall: a.weightedRecall / a.n,
+  }));
+  const mean = (k) => perChannel.length
+    ? perChannel.reduce((s, r) => s + r[k], 0) / perChannel.length : 0;
+  return {
+    perChannel, channels: perChannel.length,
+    precision: mean('precision'), recall: mean('recall'), weightedRecall: mean('weightedRecall'),
+  };
+})();
+
+const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic'];
 
 console.log(`\nprecision@${PER_HOUR}/hour, held out by channel, mean over channels`);
 console.log(`anything near ${(chance * 100).toFixed(0)}% is chance\n`);
+console.log(`the bar is "constant", not "random": constant picks the earliest`);
+console.log(`windows, and events are front-loaded, so it is a position baseline\n`);
 console.log('scorer'.padEnd(20) + 'precision'.padStart(11) + '95% CI'.padStart(18) + 'recall'.padStart(9) + 'wRecall'.padStart(9));
 for (const name of order) {
   const r = results[name];

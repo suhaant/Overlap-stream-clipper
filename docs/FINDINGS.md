@@ -177,3 +177,62 @@ get confidence intervals worth printing, something like 200 events across 8 or
 more channels, which is on the order of 30 to 40 recorded channel-hours on
 channels above the viewer floor. The recorder produces that in a few days, and
 only ohnepixel, elajjaz and a handful of others contribute.
+
+## The dataset is front-loaded, and the old chance rate hid it
+
+*2026-11-25, after the second clip harvest*
+
+The harvest caught up with the recorder: 5,487 new clip records, 4,424 of
+4,475 earlier ones already carrying a `vod_offset`, 297 still pending. The
+dataset went from 7,047 windows on 3 channels to **104,282 windows on 21
+channels, 3,518 positive (3.37%), 4,023 clip events**. Fourteen channels now
+clear the three-press bar, up from three.
+
+With a readable amount of data, two problems in the harness showed up.
+
+**The chance rate was computed against the wrong denominator.** It divided
+event-coverage seconds by wall-clock hours. But a scorer can only pick a
+window that exists, and windows exist only where there was chat, so quiet
+stretches inflated the denominator and deflated chance. It printed 2.5% while
+a constant scorer reached 7.3% — which made every baseline look three times
+better than nothing. Now it is the share of *pickable* windows inside an
+acceptance window: **4.1%**. A seeded random scorer run through the real
+harness, averaged over 20 seeds, measures **0.039**, which agrees. Two
+independent routes to the same floor is the reassurance that the fix is right.
+
+**`constant` is not a null baseline, it is a position baseline.** Every score
+ties, so peak-picking falls back to row order, which is time order, so it
+picks the earliest windows of each stream. That beats noise nearly 2× (0.073
+vs 0.039). The reason is in the labels, not the code: **36% of qualifying
+events land in the first fifth of each channel's recorded span**, against the
+20% an even spread would give. ohnepixel is 18 of 37, bratishkinoff 6 of 9.
+The recorder picks channels for being live and busy, so it attaches near a peak
+and the stream cools afterwards.
+
+So the bar is `constant`, not `random`. And on that bar:
+
+| scorer | precision | 95% CI | recall |
+|---|---|---|---|
+| random | 0.039 | [0.03, 0.06] | 0.222 |
+| constant (position) | 0.073 | [0.03, 0.12] | 0.311 |
+| velocity | 0.080 | [0.04, 0.13] | 0.320 |
+| chatterVelocity | 0.079 | [0.04, 0.13] | 0.435 |
+| currentHeuristic | 0.072 | [0.04, 0.12] | 0.328 |
+| convergenceOnly | 0.052 | [0.02, 0.09] | 0.197 |
+| lightor | 0.048 | [0.02, 0.08] | 0.259 |
+
+**Nothing beats guessing early.** The three rate-based scorers sit within noise
+of the position baseline, and the two convergence-based ones sit *below* it,
+barely above random. `chatterVelocity` is the only interesting row: its recall
+is 0.435 against the position baseline's 0.311, so it finds more of the events
+while being no more precise about which of its picks are right.
+
+This is a negative result and it is worth having early. Had the old chance rate
+survived into Day 4, a model that learned nothing but a clock would have
+reported 7% against a 2.5% floor and looked like a finding.
+
+Open, and blocking a clean Day 4: the front-loading is an artifact of how the
+recorder joins streams, so it needs removing at the data level — either by
+joining channels at random times rather than at peak, or by reporting precision
+within fixed stream-position strata so a clock cannot win. Until then, any
+trained number has to be read against `constant`.

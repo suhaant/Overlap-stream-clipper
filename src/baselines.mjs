@@ -103,8 +103,42 @@ export function makeLightor(trainRows) {
 export const convergenceOnly = (r) =>
   0.5 * r.w4_crowdRepetition + 0.5 * r.w4_crowdDiversity;
 
-/** Sanity floor: a fixed score, so peak-picking returns arbitrary windows. */
+/**
+ * Not a null baseline: a position baseline. Every score ties, so peak-picking
+ * falls back to row order, which is time order, so this picks the earliest
+ * windows of the stream at one-refractory-period intervals.
+ *
+ * That turns out to beat noise nearly 2x on this dataset (0.073 vs 0.039),
+ * because 36% of qualifying events land in the first fifth of each channel's
+ * recorded span against the 20% an even spread would give. The recorder joins
+ * channels chosen for being live and busy, so it attaches near a peak and the
+ * stream cools afterwards.
+ *
+ * Keep it, and read it as the bar: a scorer that does not beat this has not
+ * learned anything chat-shaped, it has at best learned a clock.
+ */
 export const constant = () => 1;
+
+/**
+ * Uniform random scores, so the floor can be measured rather than derived.
+ *
+ * `constant` is a weak floor: every score ties, so peak-picking returns
+ * whatever order the rows arrived in, which is time order, which is not
+ * uninformed -- it front-loads the picks. A random scorer spreads them, and is
+ * the honest answer to "what does one uninformed guess buy you".
+ *
+ * Deterministic in (t, seed) rather than stateful, because the harness is free
+ * to score rows in any order and a stateful PRNG would make the result depend
+ * on that order. The caller averages over seeds.
+ */
+export function makeRandom(seed = 1) {
+  return (r) => {
+    let h = (Math.imul(seed, 2654435761) ^ (r.t >>> 0)) >>> 0;
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+}
 
 export const BASELINES = {
   velocity,
