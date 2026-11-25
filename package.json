@@ -15,7 +15,8 @@
     "check-auth": "node tools/check-auth.mjs",
     "verify-alignment": "node tools/verify-alignment.mjs",
     "measure-lag": "node tools/measure-lag.mjs",
-    "build-dataset": "node tools/build-dataset.mjs"
+    "build-dataset": "node tools/build-dataset.mjs",
+    "evaluate": "node tools/evaluate.mjs"
   },
   "engines": {
     "node": ">=22"
