@@ -140,3 +140,34 @@ for d in data/chat/*/; do printf '%s %s\n' "$(wc -l < "$d$(ls -t "$d" | head -1)
 # how many harvested clips actually have a usable label
 cat data/clips/*.jsonl | node -e 'let n=0,o=0;require("readline").createInterface({input:process.stdin}).on("line",l=>{if(!l.trim())return;n++;if(JSON.parse(l).vodOffset!==null)o++}).on("close",()=>console.log(o+"/"+n+" with an offset"))'
 ```
+
+## Re-running the pipeline after more recording
+
+One command, in dependency order:
+
+```
+npm run refresh
+```
+
+That is `live-windows` (fetch each channel's broadcast intervals), `harvest
+--days 3` (clip labels, which also backfills `vod_offset` on clips harvested
+too early), `build-dataset`, `evaluate`. Each step fails loudly rather than
+leaving a stale file behind, and `npm run weights` afterwards prints what the
+fit leaned on.
+
+**Re-run it on a lag.** A clip's `vod_offset` is null for an indeterminate
+period after creation and null forever once the VOD expires, so a harvest run
+too early simply has no label for that moment. Running it daily for a few days
+picks up what the previous pass could not see — the 2026-11-25 pass backfilled
+48 offsets that the 10:07 pass had missed.
+
+**Do not stop the recorder to do any of this.** Twitch removed the public
+VOD-comments endpoint, so chat for a stream that has already aired is
+unrecoverable. Labels can arrive late; features cannot arrive at all. Every
+tool above reads from `data/` and none of them touch the recorder.
+
+**What will not survive.** Idle sleep is held off while a Claude session is
+active, but a closed lid or a manual Sleep still sleeps the machine, and the
+recorder dies with it. The gap shows up in `data/chat/<channel>/` as a missing
+hour file, and `readRange` reports it in `missingHours` so a gap is visible
+rather than silently read as a quiet stream.
