@@ -15,9 +15,9 @@ import { loadEnv } from '../src/env.mjs';
 import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { readRange, recordedChannels, recordedSpan } from '../src/chatlog.mjs';
-import { windowFeatures } from '../src/features.mjs';
 import { locateClip, clusterPresses, matchEvent } from '../src/align.mjs';
 import { getVideoById } from '../src/twitch-endpoints.mjs';
+import { buildRow, SCALES as DEFAULT_SCALES, MIN_MESSAGES as DEFAULT_MIN_MESSAGES } from '../src/windowrow.mjs';
 
 loadEnv();
 
@@ -29,12 +29,26 @@ const CLIP_DIR = flag('clips', 'data/clips');
 const OUT = flag('out', 'data/dataset.jsonl');
 const STEP_MS = Number(flag('step', 1000));
 const TOLERANCE = Number(flag('tolerance', 3));
-/** Multi-scale: the model needs the shape over time, not one instant. */
-const SCALES = [4000, 10000, 30000];
-const MIN_MESSAGES = Number(flag('min-messages', 5));
+// Scales and the minimum-chat rule live in src/windowrow.mjs so the live
+// detector cannot drift from the benchmark. Overridable here only for
+// experiments; src/score.mjs reads the defaults.
+const SCALES = DEFAULT_SCALES;
+const MIN_MESSAGES = Number(flag('min-messages', DEFAULT_MIN_MESSAGES));
 
 const VIDEO_CACHE = 'data/videos.json';
 const LIVE_WINDOWS = flag('live-windows', 'data/live-windows.json');
+/**
+ * Drop the newest windows, whose labels cannot be complete yet.
+ *
+ * A clip's vod_offset is null for a while after creation, so a moment from
+ * five minutes ago is unlabelled no matter how many people clipped it. Keeping
+ * those windows adds guaranteed-negative rows and deflates every number --
+ * recovering 7,060 recent windows on 2026-11-25 dropped logregRate from 0.116
+ * to 0.107 purely by adding unlabelled time.
+ *
+ * p90 of clip-created-minus-moment is 4 minutes, so 30 is generous.
+ */
+const LABEL_LAG_MS = Number(flag('label-lag-min', 30)) * 60_000;
 
 function loadClips(channel) {
   const path = join(CLIP_DIR, `${channel}.jsonl`);
@@ -66,16 +80,6 @@ async function videoLookup(ids) {
     writeFileSync(VIDEO_CACHE, JSON.stringify(cache));
   }
   return { cache, fetched };
-}
-
-/** First index with t >= target, over a time-sorted array. */
-function lowerBound(msgs, target) {
-  let lo = 0, hi = msgs.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (msgs[mid].t < target) lo = mid + 1; else hi = mid;
-  }
-  return lo;
 }
 
 async function main() {
@@ -117,7 +121,8 @@ if (!Object.keys(liveWindows).length) {
   console.log('Run: node tools/fetch-live-windows.mjs\n');
 }
 
-let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0, skippedOffline = 0;
+const labelCutoff = Date.now() - LABEL_LAG_MS;
+let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0, skippedOffline = 0, skippedUnripe = 0;
   const perChannel = [];
 
   for (const ch of channels) {
@@ -137,7 +142,7 @@ let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0, skippedOffline
 
     // Broadcast intervals for this channel, or null to leave it ungated.
     const live = liveWindows[ch]?.length ? liveWindows[ch] : null;
-    const isLive = (t) => !live || live.some(w => t >= w.lo && t <= w.hi);
+    const isLive = (t) => !live || live.some(w => t >= w.lo && t <= (w.hi ?? Infinity));
 
     const from = Math.max(span.startMs, messages[0].t);
     const to = Math.min(span.endMs, messages[messages.length - 1].t);
@@ -147,19 +152,10 @@ let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0, skippedOffline
     for (let t = from + Math.max(...SCALES); t <= to; t += STEP_MS) {
       if (gapTimes.some(g => Math.abs(g - t) < 60_000)) { skippedGap++; continue; }
       if (!isLive(t)) { skippedOffline++; continue; }
+      if (t > labelCutoff) { skippedUnripe++; continue; }
 
-      const row = { ch, t };
-      let enough = false;
-      for (const scale of SCALES) {
-        const lo = lowerBound(messages, t - scale);
-        const hi = lowerBound(messages, t);
-        const w = messages.slice(lo, hi);
-        if (scale === SCALES[0] && w.length >= MIN_MESSAGES) enough = true;
-        const f = windowFeatures(w, { windowMs: scale });
-        const tag = `w${scale / 1000}`;
-        for (const [k, v] of Object.entries(f)) row[`${tag}_${k}`] = Number(v.toFixed(4));
-      }
-      if (!enough) continue;
+      const row = buildRow(messages, t, { ch, scales: SCALES, minMessages: MIN_MESSAGES });
+      if (!row) continue;
 
       const hit = matchEvent(t, events, { toleranceSec: TOLERANCE });
       row.label = hit ? 1 : 0;
@@ -183,6 +179,7 @@ let totalRows = 0, totalPos = 0, totalEvents = 0, skippedGap = 0, skippedOffline
   console.log(`\n${totalRows.toLocaleString()} windows, ${totalPos.toLocaleString()} positive (${(totalPos / Math.max(totalRows, 1) * 100).toFixed(2)}%), ${totalEvents} clip events`);
   console.log(`${skippedGap.toLocaleString()} windows dropped for overlapping a disconnect`);
   console.log(`${skippedOffline.toLocaleString()} windows dropped for falling outside broadcast time`);
+  console.log(`${skippedUnripe.toLocaleString()} windows dropped as too recent to be labelled (last ${LABEL_LAG_MS / 60_000} min)`);
   console.log(`-> ${OUT}`);
 }
 

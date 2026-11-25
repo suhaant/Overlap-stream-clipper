@@ -65,12 +65,15 @@ for (const login of channels) {
   const windows = vods
     .map(v => {
       const lo = Date.parse(v.createdAt);
-      // A VOD still being written has no duration yet; treat it as running
-      // up to now rather than dropping the live stream we are recording.
+      // A VOD still being written has no duration yet. Freezing it at
+      // Date.now() looks harmless and silently throws away every second
+      // recorded after this fetch: the window ends, later chat falls outside
+      // it, and the dataset builder drops it as offline without a word. Null
+      // means "still going", and the consumer treats it as open-ended.
       const sec = v.durationSec ?? null;
-      return { lo, hi: sec == null ? Date.now() : lo + sec * 1000, vodId: v.id };
+      return { lo, hi: sec == null ? null : lo + sec * 1000, ongoing: sec == null, vodId: v.id };
     })
-    .filter(w => Number.isFinite(w.lo) && w.hi > since)
+    .filter(w => Number.isFinite(w.lo) && (w.hi === null || w.hi > since))
     .sort((a, b) => a.lo - b.lo);
 
   out[login] = windows;
@@ -79,7 +82,7 @@ for (const login of channels) {
   const span = recordedSpan(CHAT_DIR, login);
   const overlap = span
     ? windows.reduce((s, w) =>
-        s + Math.max(0, Math.min(w.hi, span.endMs) - Math.max(w.lo, span.startMs)), 0)
+        s + Math.max(0, Math.min(w.hi ?? Infinity, span.endMs) - Math.max(w.lo, span.startMs)), 0)
     : 0;
   const recorded = span ? span.endMs - span.startMs : 0;
   console.log(

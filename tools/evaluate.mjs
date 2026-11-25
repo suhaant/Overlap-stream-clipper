@@ -15,8 +15,8 @@ import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { evaluate, bootstrapCI, DEFAULT_MATCH } from '../src/eval.mjs';
 import { BASELINES, makeLightor, makeRandom } from '../src/baselines.mjs';
 import { makeLogreg, weightReport, FEATURE_SETS } from '../src/model.mjs';
-import { loadVideos, eventsFor, qualifyEvents, windowBlocks } from '../src/clipstore.mjs';
-import { matchEvent } from '../src/align.mjs';
+import { loadVideos } from '../src/clipstore.mjs';
+import { labelChannels } from '../src/labelled.mjs';
 
 const args = process.argv.slice(2);
 const flag = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
@@ -61,42 +61,13 @@ if (!existsSync(DATASET)) {
 const rows = readFileSync(DATASET, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
 const videos = loadVideos();
 
-// Group rows by channel, and attach that channel's events and recorded hours.
-const byChannel = {};
-for (const r of rows) {
-  (byChannel[r.ch] ??= { rows: [], events: [], hours: 0 }).rows.push(r);
-}
-for (const [ch, g] of Object.entries(byChannel)) {
-  const times = g.rows.map(r => r.t);
-  g.hours = (Math.max(...times) - Math.min(...times)) / 3_600_000;
-  const span = { from: Math.min(...times), to: Math.max(...times) };
-  // Only events inside the window we actually have features for can be hit.
-  g.allEvents = eventsFor(CLIP_DIR, ch, videos)
-    .filter(e => e.atMs >= span.from && e.atMs <= span.to);
-  // One block per hour's worth of pickable windows, so each block gets the
-  // same quota of events as the metric gives it picks.
-  const perBlock = Math.max(1, Math.round(g.rows.length / Math.max(g.hours, 1)));
-  g.events = qualifyEvents(g.allEvents, {
-    minPresses: MIN_PRESSES,
-    topPerHour: TOP_PER_HOUR,
-    blocks: TOP_PER_HOUR > 0 ? windowBlocks(g.rows.map(r => r.t), perBlock) : null,
-  });
-
-  // Relabel against the qualified events. The dataset's own `label` marks any
-  // clip press at all, which was the right thing to store -- it does not bake
-  // a threshold into the data -- but training on "somebody pressed clip" while
-  // scoring on "this block's best moments" would be answering a different
-  // question than the one being measured. Trained scorers use `y`.
-  for (const r of g.rows) {
-    r.y = matchEvent(r.t, g.events, { toleranceSec: LABEL_TOLERANCE }) ? 1 : 0;
-  }
-}
-
-// A channel with no events in range cannot distinguish any scorer.
-const usable = Object.fromEntries(
-  Object.entries(byChannel).filter(([, g]) => g.events.length > 0 && g.rows.length > 30),
-);
-const channels = Object.keys(usable);
+const { usable, channels } = labelChannels(rows, {
+  clipDir: CLIP_DIR,
+  videos,
+  topPerHour: TOP_PER_HOUR,
+  minPresses: MIN_PRESSES,
+  toleranceSec: LABEL_TOLERANCE,
+});
 
 console.log(`${rows.length.toLocaleString()} windows, ${channels.length} channels with events in range`);
 console.log(TOP_PER_HOUR > 0
