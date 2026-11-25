@@ -35,3 +35,27 @@ Tick items off, and add new ones as they surface.
 - [ ] Config file for per-channel layout and thresholds, replacing hardcoded maps
 - [ ] CI: run the test suite on push
 - [ ] Review dashboard for detected moments
+
+## Found on first contact with real data (25 Nov)
+
+**Within-message repetition inflates convergence.** The second line recorded on
+ohnepixel was one chatter posting `GOLD` fourteen times in a single message.
+Convergence is meant to measure *agreement between people*, but a type-token
+ratio computed over a whole window is dragged down just as hard by one person
+repeating a word as by eighty people typing the same one. The
+`minUniqueChatters: 10` gate stops a lone spammer firing a clip, but the
+feature itself is still contaminated, which will matter once a model is reading
+the raw value rather than a thresholded one.
+
+Fix on Day 2: compute convergence over one representative token per chatter,
+not over every token in the window. That makes it a measure of crowd agreement
+by construction rather than by gate.
+
+**Copypasta is the hard negative to collect deliberately.** Twitch copypasta
+spreads precisely by many people pasting identical text, which is exactly the
+shape of a genuine reaction and will not be separable by convergence alone.
+Worth labelling some by hand as a diagnostic set, because a model that scores
+well overall but fires on every copypasta is not shippable.
+
+**Observed rates, 25 channels, GTA 6, 25 Nov:** 38 messages/second in
+aggregate, 11 MB/hour, projecting 7.6 GB/month. Disk is a non-issue.
