@@ -69,3 +69,57 @@ not that.
 Chatters and message rate both rise on positives, and bigger moments happen
 when more people are watching. Per-channel normalisation and an ablation
 holding rate constant come before any claim about convergence specifically.
+
+## 25 Nov — reaction lag, preliminary
+
+**n = 21. Everything here is provisional** and worth re-running once the
+recorder has covered a few full streams. It is recorded now because the method
+is settled and the direction is already informative.
+
+`tools/measure-lag.mjs`. Chat activity is counted as distinct chatters per
+second, commands excluded, smoothed over three seconds, and a peak only counts
+if it clears the window's own median by 2.5 MAD-sigma. The first version took
+a plain argmax over three minutes and produced a distribution 150 seconds wide
+from p10 to p90, which is noise in the shape of an answer.
+
+### The 3.5s versus 23-27s conflict is not a conflict
+
+| distance | measured |
+| --- | --- |
+| chat peak to press | median **16s** (p25 11, p75 29) |
+| clip start to chat peak | median **-3s** (p25 -11, p75 13) |
+
+The second row is the quantity LIGHTOR calls c, and at -3s it says a viewer
+begins their clip within a few seconds of where chat peaks. `reactionLagMs:
+3500` is not contradicted. LIGHTOR's 23-27s is measuring peak to
+*highlight start* on esports VODs, where a highlight is a teamfight with a
+run-up, and `docs/RESEARCH.md` suspected they were different distances. They
+are.
+
+The distance `reactionLagMs` actually names, from on-screen event to chat
+peak, stays unobservable, because nothing records when the event happened.
+
+### The number worth quoting
+
+**A detector firing at the chat peak is 16 seconds ahead of the median human
+clipper**, and ahead of three quarters of them by 11 seconds. Not one of the
+21 events was pressed more than 10 seconds before its own chat peak.
+
+That is the live-clipping claim stated as a measurement rather than a promise,
+and it is measured against human behaviour instead of against a competitor's
+marketing page.
+
+### A ceiling, and it is higher than feared
+
+Of 184 clip events inside the recorded span, 157 were on channels too quiet to
+measure at all. Of the 27 on channels busy enough to measure, **21 (78%) had a
+chat spike** and 6 did not.
+
+That 78% is an upper bound on recall for any chat-only detector: the other 22%
+are moments a human clipped and chat did not visibly react to, and no amount
+of modelling recovers them from chat alone. It is also the number that says
+when vision becomes worth its compute.
+
+The 157 quiet channels are their own finding. Most channels in the roster are
+below the viewer threshold where this method works, which matches LIGHTOR's
+stated limit of ~500 messages an hour and ~100 viewers.
