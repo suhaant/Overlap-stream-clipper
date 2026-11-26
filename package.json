@@ -24,7 +24,8 @@
     "refresh": "npm run live-windows && npm run harvest -- --days 3 && npm run build-dataset && npm run evaluate",
     "compare-live": "node tools/compare-live.mjs",
     "ceiling": "node tools/precision-ceiling.mjs",
-    "check-fires": "node tools/check-fires.mjs"
+    "check-fires": "node tools/check-fires.mjs",
+    "export-benchmark": "node tools/export-benchmark.mjs"
   },
   "engines": {
     "node": ">=22"
