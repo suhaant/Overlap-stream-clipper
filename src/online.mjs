@@ -52,6 +52,38 @@ export const DEFAULTS = {
   tickMs: 1000,
 };
 
+/**
+ * Self-calibration: hold the FIRE RATE steady per channel, not the threshold.
+ *
+ * One global threshold produces between 1.2 and 19.9 fires/hour depending on
+ * the channel, and the spread tracks chat volume (Spearman +0.568) rather than
+ * how often that channel actually has a moment (+0.298, not significant). So
+ * the budget gets spent where chat is loud.
+ *
+ * The obvious fix -- a fixed quantile of the channel's own scores -- does not
+ * work, and it is worth recording why. Measured across 21 channels, the
+ * quantile that yields 6 fires/hour is no more stable than the raw threshold
+ * (cv 0.088 against 0.085, so very slightly worse). A quantile is a rank, and
+ * ranks are taken over scored rows; channels differ enormously in how many
+ * scored rows an hour contains, so the same rank buys a different rate.
+ *
+ * What is actually invariant is the thing we want to hold invariant. So the
+ * detector keeps a rolling buffer of its own recent (time, score) pairs and
+ * periodically solves for the threshold that WOULD have produced the target
+ * rate over that buffer, by replaying this same state machine against it.
+ *
+ * This reads no labels. It uses only scores the detector has already computed
+ * on chat it has already seen, which is information a live detector genuinely
+ * has, so a channel calibrated this way is not leaking its own ground truth.
+ */
+export const CALIBRATION = {
+  firesPerHour: 6,
+  windowMs: 60 * 60_000,   // history the threshold is solved against
+  minSpanMs: 20 * 60_000,  // below this, keep using the global fallback
+  everyMs: 60_000,         // re-solve at most this often
+  iterations: 22,
+};
+
 export class OnlineDetector {
   /**
    * @param score (row) => number, from src/score.mjs
@@ -67,6 +99,17 @@ export class OnlineDetector {
 
     this.messages = [];
     this.firstT = null;      // first message ever seen, for the warmup
+    /**
+     * `autoCalibrate: true` takes CALIBRATION, an object overrides it, and the
+     * default (undefined) keeps the fixed threshold. The internal solver below
+     * always builds detectors with this off, or it would recurse.
+     */
+    this.auto = opts.autoCalibrate
+      ? { ...CALIBRATION, ...(opts.autoCalibrate === true ? {} : opts.autoCalibrate) }
+      : null;
+    this.history = [];       // rolling (t, s), only when self-calibrating
+    this.lastCalibratedAt = -Infinity;
+    this.calibrations = 0;
     this.state = 'idle';
     this.best = null;        // { t, score } while armed
     this.armedAt = 0;
@@ -154,6 +197,7 @@ function expireIfSettled(det, now) {
 export function advanceScored(det, now, s) {
   if (now - det.lastTick < det.tickMs) return null;
   det.lastTick = now;
+  if (det.auto) observe(det, now, s);
   if (now - det.firedAt < det.refractoryMs) return null;
 
   if (det.state === 'idle') {
@@ -248,4 +292,59 @@ export function toCandidate(fired, { reactionLagMs = 3500, preRollMs = 14000, po
     // latency the settle window buys the peak with.
     decisionLagMs: fired.decidedAt - fired.t,
   };
+}
+
+/**
+ * Buffer this score and, when due, re-solve the threshold against the buffer.
+ *
+ * Called after the tickMs rate limit, so the history holds exactly the scores
+ * the state machine actually saw. Solving against every arriving message
+ * instead would describe a detector that does not exist.
+ */
+function observe(det, now, s) {
+  if (!Number.isFinite(s)) return;
+  det.history.push({ t: now, s });
+  const cutoff = now - det.auto.windowMs;
+  let drop = 0;
+  while (drop < det.history.length && det.history[drop].t < cutoff) drop++;
+  if (drop) det.history.splice(0, drop);
+
+  if (now - det.lastCalibratedAt < det.auto.everyMs) return;
+  const span = now - det.history[0].t;
+  if (span < det.auto.minSpanMs || det.history.length < 50) return;
+
+  det.lastCalibratedAt = now;
+  det.calibrations++;
+  det.threshold = solveThreshold(det.history, det.auto);
+}
+
+/**
+ * The threshold that would have produced `firesPerHour` over this history.
+ *
+ * Replays the real state machine rather than reasoning about the score
+ * distribution, because settle and refractory collapse runs of high scores
+ * into single fires and no closed form survives that. Binary search over
+ * [0, 1] because the scores are probabilities.
+ *
+ * Cost is iterations x |history|: about 22 x 3,400 cheap steps once a minute
+ * on a busy channel, against 0.14ms per scored tick sixty times a minute. It
+ * does not show up.
+ */
+export function solveThreshold(history, { firesPerHour, iterations } = CALIBRATION) {
+  const span = (history[history.length - 1].t - history[0].t) / 3_600_000;
+  if (!(span > 0)) return 1;
+
+  const rate = (threshold) => {
+    const probe = new OnlineDetector(null, threshold);
+    let fires = 0;
+    for (const { t, s } of history) if (advanceScored(probe, t, s)) fires++;
+    return fires / span;
+  };
+
+  let lo = 0, hi = 1;
+  for (let i = 0; i < iterations; i++) {
+    const mid = (lo + hi) / 2;
+    if (rate(mid) > firesPerHour) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
 }

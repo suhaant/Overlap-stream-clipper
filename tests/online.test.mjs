@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { OnlineDetector, advance, advanceScored, calibrateThreshold, toCandidate } from '../src/online.mjs';
+import { OnlineDetector, advance, advanceScored, calibrateThreshold, solveThreshold, toCandidate } from '../src/online.mjs';
 
 /** A detector driven by scores directly, bypassing feature building. */
 const det = (threshold = 0.5, opts = {}) => new OnlineDetector(() => 0, threshold, opts);
@@ -108,4 +108,73 @@ test('does not score until the buffer spans the longest feature window', () => {
   for (let i = 0; i < 60; i++) det.ingest({ t: t0 + 31_000 + i * 200, user: `v${i}`, text: 'EZ' });
   det.tick(t0 + 43_000);
   assert.equal(det.state, 'armed');
+});
+
+/** An hour of scores, one a second, with a deterministic spread. */
+function hourOfScores(startAt = 1_700_000_000_000) {
+  const h = [];
+  for (let i = 0; i < 3600; i++) {
+    // Deterministic pseudo-noise in [0,1), peaky enough to cross any threshold.
+    const s = ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    h.push({ t: startAt + i * 1000, s });
+  }
+  return h;
+}
+
+test('solveThreshold hits the requested rate on its own history', () => {
+  const history = hourOfScores();
+  for (const firesPerHour of [2, 6, 12]) {
+    const thr = solveThreshold(history, { firesPerHour, iterations: 22 });
+    const probe = new OnlineDetector(null, thr);
+    let fires = 0;
+    for (const { t, s } of history) if (advanceScored(probe, t, s)) fires++;
+    assert.ok(Math.abs(fires - firesPerHour) <= 1,
+      `asked for ${firesPerHour}/hour, replay produced ${fires}`);
+  }
+});
+
+test('a self-calibrating detector keeps the fallback until it has enough history', () => {
+  const start = 1_700_000_000_000;
+  const d = new OnlineDetector(null, 0.99, { autoCalibrate: { firesPerHour: 6 } });
+  const history = hourOfScores(start);
+
+  // Ten minutes is under minSpanMs, so nothing is solved and 0.99 stands.
+  for (const { t, s } of history.slice(0, 600)) advanceScored(d, t, s);
+  assert.equal(d.calibrations, 0);
+  assert.equal(d.threshold, 0.99);
+
+  // Past the minimum span it solves. Direction is not the thing to assert --
+  // with this much noise a 0.99 fallback already over-fires, so calibration
+  // correctly raises it. What must hold is that the RATE lands on target.
+  for (const { t, s } of history.slice(600)) advanceScored(d, t, s);
+  assert.ok(d.calibrations > 0, 'never calibrated');
+
+  const next = hourOfScores(start + 3_600_000);
+  let fires = 0;
+  for (const { t, s } of next) if (advanceScored(d, t, s)) fires++;
+  assert.ok(fires >= 3 && fires <= 10, `asked for 6/hour, next hour fired ${fires}`);
+});
+
+test('self-calibration converges to the same rate from either side', () => {
+  const start = 1_700_000_000_000;
+  const history = [...hourOfScores(start), ...hourOfScores(start + 3_600_000)];
+  const ran = (fallback) => {
+    const d = new OnlineDetector(null, fallback, { autoCalibrate: { firesPerHour: 6 } });
+    let fires = 0;
+    for (const { t, s } of history) if (advanceScored(d, t, s)) fires++;
+    return { fires, threshold: d.threshold };
+  };
+  const low = ran(0.01);    // fires constantly before calibrating
+  const high = ran(0.99);   // fires never before calibrating
+  assert.ok(Math.abs(low.threshold - high.threshold) < 0.05,
+    `thresholds did not converge: ${low.threshold} vs ${high.threshold}`);
+});
+
+test('the internal solver does not itself self-calibrate', () => {
+  // solveThreshold builds probe detectors; if those inherited autoCalibrate
+  // each probe would solve again, and the search would not terminate.
+  const history = hourOfScores();
+  const started = Date.now();
+  solveThreshold(history, { firesPerHour: 6, iterations: 22 });
+  assert.ok(Date.now() - started < 5000, 'solveThreshold took too long: likely recursing');
 });

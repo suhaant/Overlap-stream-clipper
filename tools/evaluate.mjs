@@ -193,7 +193,12 @@ results.random = (() => {
  * Calibrated on the training folds only. Fitting the threshold on the channel
  * being scored would be the same leak as fitting the weights on it.
  */
-function evaluateOnline(makeScorer, features) {
+/**
+ * @param autoCalibrate null for the fixed global threshold, or a target rate
+ *   the detector re-solves for against its own rolling score history. The
+ *   global threshold is still used as the cold-start fallback either way.
+ */
+function evaluateOnline(makeScorer, features, { autoCalibrate = null, fireRate = PER_HOUR } = {}) {
   const perChannel = [];
   const rates = [];
 
@@ -204,10 +209,13 @@ function evaluateOnline(makeScorer, features) {
 
     const scorer = makeScorer(train, features);
     const heldOutTrain = Object.fromEntries(trainChannels.map(c => [c, usable[c]]));
-    const { threshold } = calibrateThreshold(heldOutTrain, scorer, { firesPerHour: PER_HOUR });
+    // The fire budget is a property of the detector, not of the benchmark's k.
+    // Keeping them separate is the point: it lets the detector fire less often
+    // than the benchmark asks without changing what the benchmark asks.
+    const { threshold } = calibrateThreshold(heldOutTrain, scorer, { firesPerHour: fireRate });
 
     const g = usable[ch];
-    const det = new OnlineDetector(scorer, threshold);
+    const det = new OnlineDetector(scorer, threshold, autoCalibrate ? { autoCalibrate } : {});
     const detections = [];
     for (const r of g.rows) {
       const fired = replayRow(det, r);
@@ -222,21 +230,55 @@ function evaluateOnline(makeScorer, features) {
     perChannel.push({
       channel: ch, hours: g.hours, events: g.events.length, fires: detections.length, ...p,
       weightedRecall: weightedRecall(detections, g.events, { k: detections.length }),
+      calibrations: det.calibrations,
     });
   }
 
   const mean = (k) => perChannel.length ? perChannel.reduce((s, r) => s + r[k], 0) / perChannel.length : 0;
+  // Pooled precision as well as the mean over channels. The mean gives a
+  // 100-row channel the same vote as a 20,000-row one, which is how 0.165
+  // survives alongside a pooled 0.044; both belong in the record.
+  const fires = perChannel.reduce((s, r) => s + r.fires, 0);
+  const hits = perChannel.reduce((s, r) => s + r.precision * r.fires, 0);
+  // Zero-rate channels stay in: a channel the detector never fires on is a
+  // failure of exactly the kind a spread is supposed to surface, and dropping
+  // it would make the spread look tighter the worse things got.
+  const rs = [...rates].sort((a, b) => a - b);
   return {
     perChannel, channels: perChannel.length,
     precision: mean('precision'), recall: mean('recall'), weightedRecall: mean('weightedRecall'),
+    pooledPrecision: fires ? hits / fires : 0,
     firesPerHour: rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : 0,
+    silentChannels: rs.filter(r => r === 0).length,
+    rateSpread: rs.length
+      ? { lo: rs[0], hi: rs[rs.length - 1], ratio: rs[0] > 0 ? rs[rs.length - 1] / rs[0] : Infinity }
+      : null,
   };
 }
 
-results.online = evaluateOnline(
-  (rows, features) => makeLogreg(rows, { features }), FEATURE_SETS.rateAndConvergence());
+const onlineScorer = (rows, features) => makeLogreg(rows, { features });
+const onlineFeatures = FEATURE_SETS.rateAndConvergence();
 
-const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic', 'logregRate', 'logregShares', 'logregRateConv', 'logreg', 'online'];
+/**
+ * Two ways to stop over-firing, measured against each other.
+ *
+ *   global<N>  one threshold for every channel, calibrated on the training
+ *              folds to N fires/hour on average.
+ *   rolling<N> each channel re-solves its own threshold against its own recent
+ *              scores, so N is hit per channel rather than on average.
+ *
+ * The second is strictly more machinery. It has to earn that.
+ */
+const FIRE_RATES = [6, 3, 2, 1];
+results.online = evaluateOnline(onlineScorer, onlineFeatures);     // the shipping config
+for (const n of FIRE_RATES) {
+  results[`global${n}`] = evaluateOnline(onlineScorer, onlineFeatures, { fireRate: n });
+  results[`rolling${n}`] = evaluateOnline(onlineScorer, onlineFeatures, {
+    fireRate: n, autoCalibrate: { firesPerHour: n },
+  });
+}
+
+const order = ['random', 'constant', 'velocity', 'chatterVelocity', 'convergenceOnly', 'lightor', 'currentHeuristic', 'logregRate', 'logregShares', 'logregRateConv', 'logreg', 'online', 'onlineRolling6', 'onlineRolling3', 'onlineRolling2'];
 
 console.log(`\nprecision@${PER_HOUR}/hour, held out by channel, mean over channels`);
 console.log(`anything near ${(chance * 100).toFixed(0)}% is chance\n`);
@@ -263,6 +305,16 @@ writeFileSync(OUT, JSON.stringify({
   results: Object.fromEntries(Object.entries(results).map(([k, v]) => [k, {
     precision: v.precision, recall: v.recall, weightedRecall: v.weightedRecall,
     channels: v.channels, ci: bootstrapCI(v.perChannel),
+    // The fleet view. `precision` above is a mean over channels, which gives a
+    // 100-row channel the same vote as a 20,000-row one; pooled weights by
+    // fires, so it answers "of everything this would emit, what fraction is
+    // real". They disagree by a lot and both belong in the record.
+    ...(v.pooledPrecision === undefined ? {} : {
+      pooledPrecision: v.pooledPrecision,
+      firesPerHour: v.firesPerHour,
+      silentChannels: v.silentChannels,
+      rateSpread: v.rateSpread,
+    }),
     // Kept so the spread behind the mean is inspectable: 14 channels is few
     // enough that one of them can carry a headline number on its own.
     perChannel: v.perChannel.map(c => ({
@@ -271,6 +323,22 @@ writeFileSync(OUT, JSON.stringify({
     })),
   }])),
 }, null, 2) + '\n');
+console.log('\nonline operating points. pooled P is the fleet number; mean P gives a');
+console.log('thin channel the same vote as a busy one. recall is what lower rates cost.\n');
+console.log('mode'.padEnd(12) + 'mean P'.padStart(8) + 'pooled P'.padStart(10) + 'recall'.padStart(8) +
+  'wRecall'.padStart(9) + 'fires/h'.padStart(9) + 'rate spread'.padStart(18));
+const onlineModes = ['online', ...FIRE_RATES.flatMap(n => [`global${n}`, `rolling${n}`])];
+for (const name of onlineModes) {
+  const r = results[name];
+  if (!r?.channels) continue;
+  const sp = r.rateSpread
+    ? `${r.rateSpread.lo.toFixed(2)}-${r.rateSpread.hi.toFixed(2)} (${Number.isFinite(r.rateSpread.ratio) ? r.rateSpread.ratio.toFixed(1) + 'x' : `${r.silentChannels} silent`})`
+    : 'n/a';
+  console.log(name.padEnd(12) + r.precision.toFixed(3).padStart(8) + r.pooledPrecision.toFixed(3).padStart(10) +
+    r.recall.toFixed(3).padStart(8) + r.weightedRecall.toFixed(3).padStart(9) +
+    r.firesPerHour.toFixed(2).padStart(9) + sp.padStart(18));
+}
+
 if (results.online?.channels) {
   console.log(`\nonline fires ${results.online.firesPerHour.toFixed(2)}/hour ` +
     `against a budget of ${PER_HOUR}; it decides at t, every row above ranks the whole hour first`);
