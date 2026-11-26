@@ -31,6 +31,21 @@ import { buildRow, SCALES } from './windowrow.mjs';
 /** Longest window the features need, plus room for out-of-order arrivals. */
 const BUFFER_MS = Math.max(...SCALES) + 10_000;
 
+/**
+ * Refuse to have an opinion until the buffer spans the longest feature window.
+ *
+ * Every feature the model uses is a ratio of a 4s window to that window's own
+ * 30s baseline. Before 30s of chat exists the baseline is short, so the ratios
+ * are inflated and anything at all scores high. Caught live, not in the
+ * benchmark: 7 seconds after connecting to a channel the detector fired on
+ * seven people typing "EZ". The benchmark never sees this because
+ * tools/build-dataset.mjs builds rows across hours of recording, where the
+ * cold start happens once and is swamped; live it happens every reconnect.
+ *
+ * This is the same reason SpikeDetector has warmupMs, arrived at the same way.
+ */
+const WARMUP_MS = Math.max(...SCALES);
+
 export const DEFAULTS = {
   settleMs: 8000,
   refractorySec: 45,
@@ -51,6 +66,7 @@ export class OnlineDetector {
     this.tickMs = tickMs;
 
     this.messages = [];
+    this.firstT = null;      // first message ever seen, for the warmup
     this.state = 'idle';
     this.best = null;        // { t, score } while armed
     this.armedAt = 0;
@@ -65,6 +81,7 @@ export class OnlineDetector {
    */
   ingest(m) {
     const msg = { t: m.t, user: m.user ?? m.login ?? '?', text: m.text ?? '' };
+    if (this.firstT === null) this.firstT = msg.t;
     const last = this.messages[this.messages.length - 1];
     if (!last || msg.t >= last.t) this.messages.push(msg);
     else {
@@ -85,7 +102,8 @@ export class OnlineDetector {
    * rebuild the same window on every arriving message.
    */
   tick(now) {
-    const row = this.messages.length ? buildRow(this.messages, now) : null;
+    const warm = this.firstT !== null && now - this.firstT >= WARMUP_MS;
+    const row = warm && this.messages.length ? buildRow(this.messages, now) : null;
     return advance(this, row, now);
   }
 }

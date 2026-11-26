@@ -91,3 +91,21 @@ test('toCandidate matches the shape the heuristic emits', () => {
     assert.ok(c[k] !== undefined, `missing ${k}, which watch.mjs reads`);
   }
 });
+
+test('does not score until the buffer spans the longest feature window', () => {
+  // Every feature is a ratio to a 30s baseline, so a cold buffer inflates all
+  // of them. Scoring before 30s have passed fired on seven people typing "EZ".
+  const alwaysFire = () => 1;
+  const det = new OnlineDetector(alwaysFire, 0.5);
+  const t0 = 1_000_000;
+  for (let i = 0; i < 60; i++) det.ingest({ t: t0 + i * 200, user: `u${i}`, text: 'EZ' });
+
+  // 10s in: plenty of chat, but no baseline to compare it to.
+  assert.equal(det.tick(t0 + 10_000), null);
+  assert.equal(det.state, 'idle');
+
+  // Past the warmup the same detector arms and fires.
+  for (let i = 0; i < 60; i++) det.ingest({ t: t0 + 31_000 + i * 200, user: `v${i}`, text: 'EZ' });
+  det.tick(t0 + 43_000);
+  assert.equal(det.state, 'armed');
+});

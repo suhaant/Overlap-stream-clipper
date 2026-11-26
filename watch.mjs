@@ -132,18 +132,38 @@ for (const ch of channels) {
   if (USE_MODEL) {
     const det = new OnlineDetector(scoreRow, fireThreshold);
     const recent = [];
+
+    /**
+     * Ingest on arrival, decide on a clock.
+     *
+     * Ticking only when a message arrives leaves the detector armed through a
+     * lull: there is no tick to expire its settle window, so it waits for chat
+     * to come back and then commits to a peak minutes in the past. That is how
+     * a 2,011-second decision latency happened once (see measure-latency).
+     *
+     * The clock is Twitch's, not ours. Feature windows are [t - scale, t), so a
+     * second of skew between `tmi-sent-ts` and `Date.now()` quietly drops the
+     * newest slice of chat out of every window.
+     */
+    let lastT = 0, lastSeenAt = 0;
+    const twitchNow = () => (lastT ? lastT + (Date.now() - lastSeenAt) : Date.now());
+
     chat.on('message', (m) => {
       det.ingest(m);
+      lastT = m.t; lastSeenAt = Date.now();
       recent.push(m);
       while (recent.length && recent[0].t < m.t - 60_000) recent.shift();
+    });
 
-      const fired = det.tick(m.t);
+    const ticker = setInterval(() => {
+      const fired = det.tick(twitchNow());
       if (!fired) return;
       const cand = toCandidate(fired);
       const window = recent.filter(x => x.t >= cand.onsetAt - 2000 && x.t <= cand.peakAt + 5000);
       onMoment(cand, window,
         `model ${cand.modelScore} · decided ${(cand.decisionLagMs / 1000).toFixed(1)}s after the peak`);
-    });
+    }, 1000);
+    process.on('exit', () => clearInterval(ticker));
   } else {
     const det = new SpikeDetector().start();
     chat.on('message', (m) => det.ingest(m));
