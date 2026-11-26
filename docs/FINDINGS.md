@@ -474,3 +474,126 @@ still runs. Both stay because the benchmark cannot separate them: 0.130 against
 0.141 with intervals that overlap almost entirely. Picking a winner on that gap
 would be reading noise. Where they *disagree* is the interesting comparison and
 it needs both to exist.
+
+## Day 5: first contact with a live stream
+
+Ran both detectors against **zackrawrr** — 37.6k viewers, GTA VI, and genuinely
+held out of training. Of the 25 channels the recorder follows only five were
+live and only `kyedae` was English, and she is in the training set; the live
+English GTA VI list supplied a held-out channel instead.
+
+`tools/compare-live.mjs` opens one IRC connection and feeds both detectors the
+same messages. Two `watch.mjs` processes would not answer the question: each
+opens its own connection, so every disagreement would be confounded with a
+different message set and different arrival times. That confound is not
+hypothetical — see the 1.9s spread below.
+
+### Two bugs the entire offline benchmark was blind to
+
+**No warmup.** Seven seconds after connecting, the model fired on seven people
+typing "EZ". Every feature is a ratio of a 4s window to that window's own 30s
+baseline, so before 30s of chat exists the baseline is short and anything at
+all scores high. `tools/build-dataset.mjs` builds rows across hours of
+recording, where one cold start per session is swamped by thousands of warm
+rows. Live it happens on **every reconnect**. `OnlineDetector` now refuses to
+score until the buffer spans the longest feature window, which is the same
+reason `SpikeDetector` has always had `warmupMs`, arrived at independently.
+
+**Arrival-driven ticking.** `watch.mjs` ticked the model when a message
+arrived. A lull then leaves it armed with no tick to expire the settle window —
+the 2,011-second decision latency, reachable again through the live path even
+though the detector itself had been fixed. Both paths now tick on a clock, and
+on *Twitch's* clock rather than ours: feature windows are `[t - scale, t)`, so
+a second of skew silently drops the newest slice of chat out of every window.
+Measured skew on this stream was −0.1s, so it was not biting yet.
+
+### 30 minutes, 3,874 messages
+
+```
+model fired        1    2.00/hour   (calibrated for 6)
+heuristic fired    3    6.00/hour   (+15 rejected by the shape gate)
+both agreed on     1    within 10s
+model only         0
+heuristic only     2
+```
+
+The one agreed moment is worth the whole run. Three independent detections:
+
+```
+20:28:38.766   model, compare process
+20:28:39.113   heuristic, same process, same connection
+20:28:40.647   model, separate watch.mjs process, separate IRC connection
+```
+
+The two detectors on one connection landed **0.3s** apart. The same model on a
+second connection landed **1.9s** from itself — which is the confound
+`compare-live.mjs` exists to remove, measured.
+
+### The calibrated rate is a fleet average, not a per-channel rate
+
+The live 2.0/hour against a 6/hour calibration looks like transfer failure. It
+is not. The benchmark already contained the answer; nobody had read it this
+way. Per-channel online fire rates across the 20 held-out channels:
+
+```
+kr1stw         19.90/h      nickmercs       4.08/h
+elajjaz        11.00/h      ricfazeres      3.46/h
+singsing       10.95/h      loya            3.27/h
+ohnepixel       9.73/h      zerkaa          3.25/h
+sasavot         7.01/h      voodoosh        3.08/h
+thetremba       6.93/h      squeezie        3.01/h
+bratishkinoff   6.17/h      frametamer666   2.56/h
+cohhcarnage     5.14/h      kyedae          2.12/h
+gotaga          4.74/h      rumathra        1.19/h
+imantado        4.58/h
+```
+
+**A 17× range, and no channel actually gets 6/hour.** zackrawrr's live 2.0 sits
+near the quiet end, next to kyedae (2.12) and frametamer666 (2.56) — inside the
+distribution, not outside it. The global threshold is behaving exactly as the
+benchmark says it does.
+
+What drives the spread (Spearman, n=20, critical ρ ≈ 0.45 at p<0.05):
+
+```
+fires/hour vs chat volume      +0.568   significant
+fires/hour vs raw press rate   +0.523   significant
+fires/hour vs precision        -0.248   not significant
+```
+
+So the rate tracks **chat volume**, and the raw-press correlation is the
+audience-size confound again, since presses scale with viewers. Firing more is
+*not* reliably worse — kr1stw is one dramatic point (19.9/h at 0.008
+precision), not a trend, and at n=20 that correlation is noise.
+
+The sharp version: **the benchmark asks every channel for the same number of
+moments per hour** — the relabelling is top-N per block of equal pickable time,
+so the target is equal-rate by construction — **while a single global threshold
+delivers between 1.2 and 19.9.** Precision is measured against an equal-rate
+question that the detector is not answering. Channel-relative features removed
+the audience confound from how the scores *rank*; they did not remove it from
+where a fixed cutoff lands in each channel's score distribution.
+
+The fix is a per-channel operating point: a rolling quantile of that channel's
+own recent scores rather than one global number. Not yet implemented.
+
+### What it clipped
+
+One moment produced a real clip: 1080×1920, 30s, captions burned in, `p=0.7678`,
+committed 3.0s after the peak. The 30 seconds are a GTA VI cutscene — a heist
+briefing — and the beat chat reacted to is a scripted joke ("Any questions?"
+"Yeah." "No. Not you. Anyone else?"). The detection is correct; chat really did
+laugh at a real punchline.
+
+But the punchline sits **8 seconds** into the clip, and the clip is built as
+`peak − 3.5s reaction lag − 14s preroll`, which puts the estimated onset at 14s.
+Chat took roughly six seconds longer to react than the lag constant predicts.
+The clip is good because the preroll is generous, not because the lag estimate
+was right. n=1, so this is a flag rather than a finding — but if the preroll is
+ever trimmed for a tighter format, a 3.5s constant will start cutting punchlines
+off the front.
+
+Second honest note: it clipped a cutscene. Chat-only detection cannot tell
+whether the funny thing was *visible* or merely audible in the streamer's
+commentary. Here it happened to be on screen. Nothing in the signal guaranteed
+that, and nothing in the signal ever will.

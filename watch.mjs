@@ -120,7 +120,12 @@ for (const ch of channels) {
           tmpDir: 'clips/.captions',
           ...(CHANNEL_LAYOUT[ch] || {}),
         });
-        made.push({ ch, out, kind: cls.kind, score: sc, z: spike.peakZ });
+        made.push({
+          ch, out, kind: cls.kind, score: sc,
+          // The two paths have no number in common: the heuristic reports a
+          // z-score against its own baseline, the model a probability.
+          why: USE_MODEL ? `p=${spike.modelScore}` : `z=${spike.peakZ}`,
+        });
         console.log(`[${ch}]   -> ${r.out} (${ex.segments} segments, captioned=${r.captioned})`);
         for (const warn of r.warnings) console.log(`[${ch}]   ! ${warn}`);
       } catch (e) {
@@ -179,7 +184,7 @@ for (const ch of channels) {
 setTimeout(() => {
   console.log(`\n=== ${made.length} clips produced ===`);
   for (const m of made.sort((a, b) => b.score - a.score)) {
-    console.log(`  ${String(m.score).padStart(3)}/100  ${m.kind.padEnd(9)} z=${String(m.z).padStart(6)}  ${m.out}`);
+    console.log(`  ${String(m.score).padStart(3)}/100  ${m.kind.padEnd(9)} ${m.why.padEnd(10)} ${m.out}`);
   }
   process.exit(0);
 }, runFor * 1000);
