@@ -1,0 +1,3308 @@
+{
+  "generatedAt": "2026-11-26T05:49:15.109Z",
+  "windows": 118244,
+  "channels": [
+    "blackufa",
+    "bratishkinoff",
+    "cohhcarnage",
+    "dmitry_bale",
+    "domingo",
+    "elajjaz",
+    "frametamer666",
+    "gotaga",
+    "imantado",
+    "kr1stw",
+    "kyedae",
+    "loya",
+    "mobilmobil",
+    "nickmercs",
+    "ohnepixel",
+    "ricfazeres",
+    "rumathra",
+    "sasavot",
+    "singsing",
+    "squeezie",
+    "thetremba",
+    "voodoosh",
+    "zerkaa"
+  ],
+  "perHour": 6,
+  "results": {
+    "velocity": {
+      "precision": 0.3051982647260008,
+      "recall": 0.2389084506888439,
+      "weightedRecall": 0.26540933524558585,
+      "channels": 23,
+      "ci": {
+        "lo": 0.23302526226064457,
+        "hi": 0.39499375991879737,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "zerkaa",
+          "precision": 0.7777777777777778,
+          "recall": 0.3333333333333333,
+          "events": 21
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.7692307692307693,
+          "recall": 0.4166666666666667,
+          "events": 24
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.575,
+          "recall": 0.17692307692307693,
+          "events": 130
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.55,
+          "recall": 0.14285714285714285,
+          "events": 154
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.48,
+          "recall": 0.22641509433962265,
+          "events": 53
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.45714285714285713,
+          "recall": 0.16494845360824742,
+          "events": 97
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.4,
+          "recall": 0.2962962962962963,
+          "events": 54
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.3939393939393939,
+          "recall": 0.7647058823529411,
+          "events": 17
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.325,
+          "recall": 0.4482758620689655,
+          "events": 29
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.2727272727272727,
+          "recall": 0.21428571428571427,
+          "events": 28
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.25925925925925924,
+          "recall": 0.14893617021276595,
+          "events": 47
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.25,
+          "recall": 0.06382978723404255,
+          "events": 141
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.225,
+          "recall": 0.1,
+          "events": 90
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.1794871794871795,
+          "recall": 0.1891891891891892,
+          "events": 37
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.175,
+          "recall": 0.15217391304347827,
+          "events": 46
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.16666666666666666,
+          "recall": 0.2608695652173913,
+          "events": 23
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.15384615384615385,
+          "recall": 0.1875,
+          "events": 32
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.125,
+          "recall": 0.08771929824561403,
+          "events": 57
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.1,
+          "recall": 0.2,
+          "events": 5
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        }
+      ]
+    },
+    "chatterVelocity": {
+      "precision": 0.32488181221005985,
+      "recall": 0.2628967875925534,
+      "weightedRecall": 0.2905217735875257,
+      "channels": 23,
+      "ci": {
+        "lo": 0.25467546141459185,
+        "hi": 0.40955831608005516,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "zerkaa",
+          "precision": 0.7777777777777778,
+          "recall": 0.3333333333333333,
+          "events": 21
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.6923076923076923,
+          "recall": 0.375,
+          "events": 24
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.575,
+          "recall": 0.14935064935064934,
+          "events": 154
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.525,
+          "recall": 0.16153846153846155,
+          "events": 130
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.52,
+          "recall": 0.24528301886792453,
+          "events": 53
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.5,
+          "recall": 0.37037037037037035,
+          "events": 54
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.4411764705882353,
+          "recall": 0.8823529411764706,
+          "events": 17
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.42857142857142855,
+          "recall": 0.15463917525773196,
+          "events": 97
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.4090909090909091,
+          "recall": 0.32142857142857145,
+          "events": 28
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.35,
+          "recall": 0.4827586206896552,
+          "events": 29
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3055555555555556,
+          "recall": 0.07801418439716312,
+          "events": 141
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.3,
+          "recall": 0.13333333333333333,
+          "events": 90
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.25925925925925924,
+          "recall": 0.14893617021276595,
+          "events": 47
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.20512820512820512,
+          "recall": 0.21621621621621623,
+          "events": 37
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.19444444444444445,
+          "recall": 0.30434782608695654,
+          "events": 23
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.1794871794871795,
+          "recall": 0.21875,
+          "events": 32
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.175,
+          "recall": 0.15217391304347827,
+          "events": 46
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.125,
+          "recall": 0.5555555555555556,
+          "events": 9
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.125,
+          "recall": 0.08771929824561403,
+          "events": 57
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.1,
+          "recall": 0.2,
+          "events": 5
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        }
+      ]
+    },
+    "currentHeuristic": {
+      "precision": 0.3531907657364047,
+      "recall": 0.281091393928833,
+      "weightedRecall": 0.3048255956573461,
+      "channels": 23,
+      "ci": {
+        "lo": 0.28157993293807737,
+        "hi": 0.432540087079729,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "singsing",
+          "precision": 0.64,
+          "recall": 0.3018867924528302,
+          "events": 53
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.6285714285714286,
+          "recall": 0.2268041237113402,
+          "events": 97
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5909090909090909,
+          "recall": 0.4642857142857143,
+          "events": 28
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.5555555555555556,
+          "recall": 0.23809523809523808,
+          "events": 21
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.55,
+          "recall": 0.16923076923076924,
+          "events": 130
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.55,
+          "recall": 0.14285714285714285,
+          "events": 154
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.5384615384615384,
+          "recall": 0.2916666666666667,
+          "events": 24
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.525,
+          "recall": 0.3888888888888889,
+          "events": 54
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.4411764705882353,
+          "recall": 0.8823529411764706,
+          "events": 17
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3611111111111111,
+          "recall": 0.09219858156028368,
+          "events": 141
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.35,
+          "recall": 0.4827586206896552,
+          "events": 29
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.35,
+          "recall": 0.30434782608695654,
+          "events": 46
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.3333333333333333,
+          "recall": 0.19148936170212766,
+          "events": 47
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.325,
+          "recall": 0.14444444444444443,
+          "events": 90
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.3,
+          "recall": 0.21052631578947367,
+          "events": 57
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.28205128205128205,
+          "recall": 0.2972972972972973,
+          "events": 37
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.15384615384615385,
+          "recall": 0.1875,
+          "events": 32
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.1388888888888889,
+          "recall": 0.21739130434782608,
+          "events": 23
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.125,
+          "recall": 0.5555555555555556,
+          "events": 9
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.1,
+          "recall": 0.2,
+          "events": 5
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        }
+      ]
+    },
+    "convergenceOnly": {
+      "precision": 0.2712048929608899,
+      "recall": 0.20941278819144915,
+      "weightedRecall": 0.2168669252282685,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2059183015329942,
+        "hi": 0.3435175894958503,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "zerkaa",
+          "precision": 0.5555555555555556,
+          "recall": 0.23809523809523808,
+          "events": 21
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5454545454545454,
+          "recall": 0.42857142857142855,
+          "events": 28
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.5428571428571428,
+          "recall": 0.1958762886597938,
+          "events": 97
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.5,
+          "recall": 0.15384615384615385,
+          "events": 130
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.46153846153846156,
+          "recall": 0.25,
+          "events": 24
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.425,
+          "recall": 0.11038961038961038,
+          "events": 154
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.375,
+          "recall": 0.2777777777777778,
+          "events": 54
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.34375,
+          "recall": 0.6470588235294118,
+          "events": 17
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3055555555555556,
+          "recall": 0.07801418439716312,
+          "events": 141
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.3,
+          "recall": 0.41379310344827586,
+          "events": 29
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.28,
+          "recall": 0.1320754716981132,
+          "events": 53
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.25,
+          "recall": 0.21739130434782608,
+          "events": 46
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.23076923076923078,
+          "recall": 0.28125,
+          "events": 32
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.225,
+          "recall": 0.1,
+          "events": 90
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.225,
+          "recall": 0.15789473684210525,
+          "events": 57
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.18518518518518517,
+          "recall": 0.10638297872340426,
+          "events": 47
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.10256410256410256,
+          "recall": 0.10810810810810811,
+          "events": 37
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0,
+          "recall": 0,
+          "events": 23
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0,
+          "recall": 0,
+          "events": 5
+        }
+      ]
+    },
+    "constant": {
+      "precision": 0.2141486234708741,
+      "recall": 0.18646734849628266,
+      "weightedRecall": 0.21284469359619787,
+      "channels": 23,
+      "ci": {
+        "lo": 0.16226543987413553,
+        "hi": 0.28141870207087594,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "zerkaa",
+          "precision": 0.6666666666666666,
+          "recall": 0.2857142857142857,
+          "events": 21
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.4411764705882353,
+          "recall": 0.8823529411764706,
+          "events": 17
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3611111111111111,
+          "recall": 0.09219858156028368,
+          "events": 141
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.325,
+          "recall": 0.08441558441558442,
+          "events": 154
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.325,
+          "recall": 0.4482758620689655,
+          "events": 29
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.3076923076923077,
+          "recall": 0.16666666666666666,
+          "events": 24
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.2857142857142857,
+          "recall": 0.10309278350515463,
+          "events": 97
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.25,
+          "recall": 0.07692307692307693,
+          "events": 130
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.24,
+          "recall": 0.11320754716981132,
+          "events": 53
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.225,
+          "recall": 0.1,
+          "events": 90
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.225,
+          "recall": 0.16666666666666666,
+          "events": 54
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2222222222222222,
+          "recall": 0.1276595744680851,
+          "events": 47
+        },
+        {
+          "channel": "loya",
+          "precision": 0.2,
+          "recall": 0.3076923076923077,
+          "events": 13
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.18181818181818182,
+          "recall": 0.14285714285714285,
+          "events": 28
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.1388888888888889,
+          "recall": 0.21739130434782608,
+          "events": 23
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.1282051282051282,
+          "recall": 0.13513513513513514,
+          "events": 37
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.1,
+          "recall": 0.2,
+          "events": 5
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.07692307692307693,
+          "recall": 0.09375,
+          "events": 32
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.075,
+          "recall": 0.06521739130434782,
+          "events": 46
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.05,
+          "recall": 0.03508771929824561,
+          "events": 57
+        },
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0,
+          "recall": 0,
+          "events": 11
+        }
+      ]
+    },
+    "lightor": {
+      "precision": 0.2515411649819446,
+      "recall": 0.20905985135472022,
+      "weightedRecall": 0.2144609758060255,
+      "channels": 23,
+      "ci": {
+        "lo": 0.18605756645486782,
+        "hi": 0.3189261721120792,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.3,
+          "recall": 0.09230769230769231,
+          "events": 130
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.3142857142857143,
+          "recall": 0.1134020618556701,
+          "events": 97
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5,
+          "recall": 0.39285714285714285,
+          "events": 28
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.15,
+          "recall": 0.03896103896103896,
+          "events": 154
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.275,
+          "recall": 0.12222222222222222,
+          "events": 90
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.46153846153846156,
+          "recall": 0.25,
+          "events": 24
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.20512820512820512,
+          "recall": 0.21621621621621623,
+          "events": 37
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0,
+          "recall": 0,
+          "events": 23
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.275,
+          "recall": 0.3793103448275862,
+          "events": 29
+        },
+        {
+          "channel": "loya",
+          "precision": 0.2,
+          "recall": 0.3076923076923077,
+          "events": 13
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0,
+          "recall": 0,
+          "events": 5
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.4,
+          "recall": 0.2962962962962963,
+          "events": 54
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3611111111111111,
+          "recall": 0.09219858156028368,
+          "events": 141
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.42424242424242425,
+          "recall": 0.8235294117647058,
+          "events": 17
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2222222222222222,
+          "recall": 0.1276595744680851,
+          "events": 47
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.24,
+          "recall": 0.11320754716981132,
+          "events": 53
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.25,
+          "recall": 0.21739130434782608,
+          "events": 46
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.175,
+          "recall": 0.12280701754385964,
+          "events": 57
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.23076923076923078,
+          "recall": 0.28125,
+          "events": 32
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.6666666666666666,
+          "recall": 0.2857142857142857,
+          "events": 21
+        }
+      ]
+    },
+    "logreg": {
+      "precision": 0.35411013385526124,
+      "recall": 0.2833307734704101,
+      "weightedRecall": 0.3051441671141086,
+      "channels": 23,
+      "ci": {
+        "lo": 0.27127661471739434,
+        "hi": 0.4431628935227137,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.675,
+          "recall": 0.2076923076923077,
+          "events": 130
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.42857142857142855,
+          "recall": 0.15463917525773196,
+          "events": 97
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5,
+          "recall": 0.39285714285714285,
+          "events": 28
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4,
+          "recall": 0.1038961038961039,
+          "events": 154
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.35,
+          "recall": 0.15555555555555556,
+          "events": 90
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.8461538461538461,
+          "recall": 0.4583333333333333,
+          "events": 24
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.20512820512820512,
+          "recall": 0.21621621621621623,
+          "events": 37
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.19444444444444445,
+          "recall": 0.30434782608695654,
+          "events": 23
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.3,
+          "recall": 0.41379310344827586,
+          "events": 29
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.2,
+          "recall": 0.4,
+          "events": 5
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.625,
+          "recall": 0.46296296296296297,
+          "events": 54
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2777777777777778,
+          "recall": 0.07092198581560284,
+          "events": 141
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.42424242424242425,
+          "recall": 0.8235294117647058,
+          "events": 17
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2962962962962963,
+          "recall": 0.1702127659574468,
+          "events": 47
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.64,
+          "recall": 0.3018867924528302,
+          "events": 53
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.25,
+          "recall": 0.21739130434782608,
+          "events": 46
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.25,
+          "recall": 0.17543859649122806,
+          "events": 57
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.23076923076923078,
+          "recall": 0.28125,
+          "events": 32
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.6666666666666666,
+          "recall": 0.2857142857142857,
+          "events": 21
+        }
+      ]
+    },
+    "logregRate": {
+      "precision": 0.3434838760550904,
+      "recall": 0.27422811404881814,
+      "weightedRecall": 0.3056352797230801,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2618617791781209,
+        "hi": 0.42929429668560104,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.675,
+          "recall": 0.2076923076923077,
+          "events": 130
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.37142857142857144,
+          "recall": 0.13402061855670103,
+          "events": 97
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5,
+          "recall": 0.39285714285714285,
+          "events": 28
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.55,
+          "recall": 0.14285714285714285,
+          "events": 154
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.3,
+          "recall": 0.13333333333333333,
+          "events": 90
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.7692307692307693,
+          "recall": 0.4166666666666667,
+          "events": 24
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.1794871794871795,
+          "recall": 0.1891891891891892,
+          "events": 37
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.2222222222222222,
+          "recall": 0.34782608695652173,
+          "events": 23
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.375,
+          "recall": 0.5172413793103449,
+          "events": 29
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.1,
+          "recall": 0.2,
+          "events": 5
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.55,
+          "recall": 0.4074074074074074,
+          "events": 54
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.25,
+          "recall": 0.06382978723404255,
+          "events": 141
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.45454545454545453,
+          "recall": 0.8823529411764706,
+          "events": 17
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2962962962962963,
+          "recall": 0.1702127659574468,
+          "events": 47
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.6,
+          "recall": 0.2830188679245283,
+          "events": 53
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.2,
+          "recall": 0.17391304347826086,
+          "events": 46
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.225,
+          "recall": 0.15789473684210525,
+          "events": 57
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.23076923076923078,
+          "recall": 0.28125,
+          "events": 32
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.6666666666666666,
+          "recall": 0.2857142857142857,
+          "events": 21
+        }
+      ]
+    },
+    "logregShares": {
+      "precision": 0.3049346394623756,
+      "recall": 0.24160475841944676,
+      "weightedRecall": 0.25650714263484997,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2297397699196799,
+        "hi": 0.3754080235939306,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.45,
+          "recall": 0.13846153846153847,
+          "events": 130
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.4857142857142857,
+          "recall": 0.17525773195876287,
+          "events": 97
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5909090909090909,
+          "recall": 0.4642857142857143,
+          "events": 28
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.45,
+          "recall": 0.11688311688311688,
+          "events": 154
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.275,
+          "recall": 0.12222222222222222,
+          "events": 90
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.5384615384615384,
+          "recall": 0.2916666666666667,
+          "events": 24
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.1794871794871795,
+          "recall": 0.1891891891891892,
+          "events": 37
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.05555555555555555,
+          "recall": 0.08695652173913043,
+          "events": 23
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.35,
+          "recall": 0.4827586206896552,
+          "events": 29
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0,
+          "recall": 0,
+          "events": 5
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.475,
+          "recall": 0.35185185185185186,
+          "events": 54
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3888888888888889,
+          "recall": 0.09929078014184398,
+          "events": 141
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.42424242424242425,
+          "recall": 0.8235294117647058,
+          "events": 17
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.14814814814814814,
+          "recall": 0.0851063829787234,
+          "events": 47
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.48,
+          "recall": 0.22641509433962265,
+          "events": 53
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.3,
+          "recall": 0.2608695652173913,
+          "events": 46
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.2,
+          "recall": 0.14035087719298245,
+          "events": 57
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.28205128205128205,
+          "recall": 0.34375,
+          "events": 32
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.5555555555555556,
+          "recall": 0.23809523809523808,
+          "events": 21
+        }
+      ]
+    },
+    "logregRateConv": {
+      "precision": 0.34700340000939706,
+      "recall": 0.2861958233540651,
+      "weightedRecall": 0.3091772134379353,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2701410755383769,
+        "hi": 0.42426973187842754,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.625,
+          "recall": 0.19230769230769232,
+          "events": 130
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.4,
+          "recall": 0.14432989690721648,
+          "events": 97
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1,
+          "recall": 0.4444444444444444,
+          "events": 9
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5454545454545454,
+          "recall": 0.42857142857142855,
+          "events": 28
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4,
+          "recall": 0.1038961038961039,
+          "events": 154
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.35,
+          "recall": 0.15555555555555556,
+          "events": 90
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.7692307692307693,
+          "recall": 0.4166666666666667,
+          "events": 24
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.23076923076923078,
+          "recall": 0.24324324324324326,
+          "events": 37
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.19444444444444445,
+          "recall": 0.30434782608695654,
+          "events": 23
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.35,
+          "recall": 0.4827586206896552,
+          "events": 29
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.38461538461538464,
+          "events": 13
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.2,
+          "recall": 0.4,
+          "events": 5
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.525,
+          "recall": 0.3888888888888889,
+          "events": 54
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2777777777777778,
+          "recall": 0.07092198581560284,
+          "events": 141
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.034482758620689655,
+          "recall": 0.09090909090909091,
+          "events": 11
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.45454545454545453,
+          "recall": 0.8823529411764706,
+          "events": 17
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2962962962962963,
+          "recall": 0.1702127659574468,
+          "events": 47
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.48,
+          "recall": 0.22641509433962265,
+          "events": 53
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.3,
+          "recall": 0.2608695652173913,
+          "events": 46
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.275,
+          "recall": 0.19298245614035087,
+          "events": 57
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.2564102564102564,
+          "recall": 0.3125,
+          "events": 32
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.6666666666666666,
+          "recall": 0.2857142857142857,
+          "events": 21
+        }
+      ]
+    },
+    "random": {
+      "precision": 0.240237136071478,
+      "recall": 0.21323576773062133,
+      "weightedRecall": 0.2185194549811906,
+      "channels": 23,
+      "ci": {
+        "lo": 0.1954303091128428,
+        "hi": 0.29027435054198486,
+        "n": 23
+      },
+      "perChannel": [
+        {
+          "channel": "ohnepixel",
+          "precision": 0.3277777777777778,
+          "recall": 0.08368794326241134
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.5555555555555556,
+          "recall": 0.23809523809523808
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.3961538461538462,
+          "recall": 0.2145833333333333
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.38863636363636356,
+          "recall": 0.3053571428571428
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.40126496823069396,
+          "recall": 0.7588235294117647
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.3120000000000001,
+          "recall": 0.14716981132075474
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.26749999999999996,
+          "recall": 0.3689655172413794
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25749999999999995,
+          "recall": 0.3961538461538463
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.30999999999999994,
+          "recall": 0.08051948051948052
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.30142857142857143,
+          "recall": 0.10876288659793816
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.21111111111111108,
+          "recall": 0.12127659574468082
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.1628205128205128,
+          "recall": 0.1716216216216216
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.27749999999999997,
+          "recall": 0.08538461538461539
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.19750000000000004,
+          "recall": 0.08777777777777777
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.195,
+          "recall": 0.16956521739130434
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.17124999999999999,
+          "recall": 0.1201754385964912
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.2475,
+          "recall": 0.18333333333333335
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.20128205128205123,
+          "recall": 0.2453125
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.11388888888888889,
+          "recall": 0.1782608695652174
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.07375,
+          "recall": 0.3277777777777778
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.031034482758620696,
+          "recall": 0.08181818181818182
+        },
+        {
+          "channel": "blackufa",
+          "precision": 0.01,
+          "recall": 0.2
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.11500000000000003,
+          "recall": 0.23000000000000007
+        }
+      ]
+    },
+    "online": {
+      "precision": 0.3809157348193001,
+      "recall": 0.2530907648369897,
+      "weightedRecall": 0.27957964381386896,
+      "channels": 23,
+      "ci": {
+        "lo": 0.289966716325011,
+        "hi": 0.4728408715357436,
+        "n": 23
+      },
+      "pooledPrecision": 0.33962264150943394,
+      "firesPerHour": 6.709247309529767,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 0.8528380555292334,
+        "hi": 26.39204049572351,
+        "ratio": 30.946133705707798
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 14
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.6065573770491803,
+          "recall": 0.2846153846153846,
+          "events": 130,
+          "fires": 61
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.32,
+          "recall": 0.08247422680412371,
+          "events": 97,
+          "fires": 25
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.21052631578947367,
+          "recall": 0.4444444444444444,
+          "events": 9,
+          "fires": 19
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5714285714285714,
+          "recall": 0.2857142857142857,
+          "events": 28,
+          "fires": 14
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4782608695652174,
+          "recall": 0.2857142857142857,
+          "events": 154,
+          "fires": 92
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.3333333333333333,
+          "recall": 0.05555555555555555,
+          "events": 90,
+          "fires": 15
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.8181818181818182,
+          "recall": 0.375,
+          "events": 24,
+          "fires": 11
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.2777777777777778,
+          "recall": 0.13513513513513514,
+          "events": 37,
+          "fires": 18
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.11864406779661017,
+          "recall": 0.6086956521739131,
+          "events": 23,
+          "fires": 118
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.4444444444444444,
+          "recall": 0.13793103448275862,
+          "events": 29,
+          "fires": 9
+        },
+        {
+          "channel": "loya",
+          "precision": 0.3333333333333333,
+          "recall": 0.23076923076923078,
+          "events": 13,
+          "fires": 9
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.09523809523809523,
+          "recall": 0.8,
+          "events": 5,
+          "fires": 42
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.5517241379310345,
+          "recall": 0.2962962962962963,
+          "events": 54,
+          "fires": 29
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2727272727272727,
+          "recall": 0.19148936170212766,
+          "events": 141,
+          "fires": 99
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.07692307692307693,
+          "recall": 0.09090909090909091,
+          "events": 11,
+          "fires": 13
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.8,
+          "recall": 0.23529411764705882,
+          "events": 17,
+          "fires": 5
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.3225806451612903,
+          "recall": 0.2127659574468085,
+          "events": 47,
+          "fires": 31
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.5869565217391305,
+          "recall": 0.5094339622641509,
+          "events": 53,
+          "fires": 46
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.2727272727272727,
+          "recall": 0.13043478260869565,
+          "events": 46,
+          "fires": 22
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.30303030303030304,
+          "recall": 0.17543859649122806,
+          "events": 57,
+          "fires": 33
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.16666666666666666,
+          "recall": 0.0625,
+          "events": 32,
+          "fires": 12
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.8,
+          "recall": 0.19047619047619047,
+          "events": 21,
+          "fires": 5
+        }
+      ]
+    },
+    "global6": {
+      "precision": 0.3809157348193001,
+      "recall": 0.2530907648369897,
+      "weightedRecall": 0.27957964381386896,
+      "channels": 23,
+      "ci": {
+        "lo": 0.289966716325011,
+        "hi": 0.4728408715357436,
+        "n": 23
+      },
+      "pooledPrecision": 0.33962264150943394,
+      "firesPerHour": 6.709247309529767,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 0.8528380555292334,
+        "hi": 26.39204049572351,
+        "ratio": 30.946133705707798
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 14
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.6065573770491803,
+          "recall": 0.2846153846153846,
+          "events": 130,
+          "fires": 61
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.32,
+          "recall": 0.08247422680412371,
+          "events": 97,
+          "fires": 25
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.21052631578947367,
+          "recall": 0.4444444444444444,
+          "events": 9,
+          "fires": 19
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5714285714285714,
+          "recall": 0.2857142857142857,
+          "events": 28,
+          "fires": 14
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4782608695652174,
+          "recall": 0.2857142857142857,
+          "events": 154,
+          "fires": 92
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.3333333333333333,
+          "recall": 0.05555555555555555,
+          "events": 90,
+          "fires": 15
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.8181818181818182,
+          "recall": 0.375,
+          "events": 24,
+          "fires": 11
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.2777777777777778,
+          "recall": 0.13513513513513514,
+          "events": 37,
+          "fires": 18
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.11864406779661017,
+          "recall": 0.6086956521739131,
+          "events": 23,
+          "fires": 118
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.4444444444444444,
+          "recall": 0.13793103448275862,
+          "events": 29,
+          "fires": 9
+        },
+        {
+          "channel": "loya",
+          "precision": 0.3333333333333333,
+          "recall": 0.23076923076923078,
+          "events": 13,
+          "fires": 9
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.09523809523809523,
+          "recall": 0.8,
+          "events": 5,
+          "fires": 42
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.5517241379310345,
+          "recall": 0.2962962962962963,
+          "events": 54,
+          "fires": 29
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2727272727272727,
+          "recall": 0.19148936170212766,
+          "events": 141,
+          "fires": 99
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.07692307692307693,
+          "recall": 0.09090909090909091,
+          "events": 11,
+          "fires": 13
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.8,
+          "recall": 0.23529411764705882,
+          "events": 17,
+          "fires": 5
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.3225806451612903,
+          "recall": 0.2127659574468085,
+          "events": 47,
+          "fires": 31
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.5869565217391305,
+          "recall": 0.5094339622641509,
+          "events": 53,
+          "fires": 46
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.2727272727272727,
+          "recall": 0.13043478260869565,
+          "events": 46,
+          "fires": 22
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.30303030303030304,
+          "recall": 0.17543859649122806,
+          "events": 57,
+          "fires": 33
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.16666666666666666,
+          "recall": 0.0625,
+          "events": 32,
+          "fires": 12
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.8,
+          "recall": 0.19047619047619047,
+          "events": 21,
+          "fires": 5
+        }
+      ]
+    },
+    "rolling6": {
+      "precision": 0.3628939396519616,
+      "recall": 0.25372448874736125,
+      "weightedRecall": 0.2809369948960706,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2749832693993027,
+        "hi": 0.45716507219817965,
+        "n": 23
+      },
+      "pooledPrecision": 0.34156976744186046,
+      "firesPerHour": 5.883805741063754,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 1.1939732777409269,
+        "hi": 10.682492581602373,
+        "ratio": 8.947011445527764
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 21
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.7142857142857143,
+          "recall": 0.23076923076923078,
+          "events": 130,
+          "fires": 42
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.48717948717948717,
+          "recall": 0.1958762886597938,
+          "events": 97,
+          "fires": 39
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.11428571428571428,
+          "recall": 0.4444444444444444,
+          "events": 9,
+          "fires": 35
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.44,
+          "recall": 0.39285714285714285,
+          "events": 28,
+          "fires": 25
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.45098039215686275,
+          "recall": 0.14935064935064934,
+          "events": 154,
+          "fires": 51
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.35,
+          "recall": 0.15555555555555556,
+          "events": 90,
+          "fires": 40
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.8571428571428571,
+          "recall": 0.5,
+          "events": 24,
+          "fires": 14
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.21052631578947367,
+          "recall": 0.21621621621621623,
+          "events": 37,
+          "fires": 38
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.20454545454545456,
+          "recall": 0.391304347826087,
+          "events": 23,
+          "fires": 44
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.25,
+          "recall": 0.13793103448275862,
+          "events": 29,
+          "fires": 16
+        },
+        {
+          "channel": "loya",
+          "precision": 0.3076923076923077,
+          "recall": 0.3076923076923077,
+          "events": 13,
+          "fires": 13
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.17647058823529413,
+          "recall": 0.6,
+          "events": 5,
+          "fires": 17
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.5348837209302325,
+          "recall": 0.42592592592592593,
+          "events": 54,
+          "fires": 43
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.25,
+          "recall": 0.07092198581560284,
+          "events": 141,
+          "fires": 40
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.03571428571428571,
+          "recall": 0.09090909090909091,
+          "events": 11,
+          "fires": 28
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.5714285714285714,
+          "recall": 0.23529411764705882,
+          "events": 17,
+          "fires": 7
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2692307692307692,
+          "recall": 0.14893617021276595,
+          "events": 47,
+          "fires": 26
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.6206896551724138,
+          "recall": 0.33962264150943394,
+          "events": 53,
+          "fires": 29
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.24390243902439024,
+          "recall": 0.21739130434782608,
+          "events": 46,
+          "fires": 41
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.2631578947368421,
+          "recall": 0.17543859649122806,
+          "events": 57,
+          "fires": 38
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.19444444444444445,
+          "recall": 0.21875,
+          "events": 32,
+          "fires": 36
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 0.8,
+          "recall": 0.19047619047619047,
+          "events": 21,
+          "fires": 5
+        }
+      ]
+    },
+    "global3": {
+      "precision": 0.40706738364161976,
+      "recall": 0.14983007751140118,
+      "weightedRecall": 0.16919398253098908,
+      "channels": 23,
+      "ci": {
+        "lo": 0.29668737060041417,
+        "hi": 0.5157015514062223,
+        "n": 23
+      },
+      "pooledPrecision": 0.3305785123966942,
+      "firesPerHour": 3.396895503621018,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 0.6047879042419152,
+        "hi": 15.709547914121137,
+        "ratio": 25.97530109966835
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 3
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.6470588235294118,
+          "recall": 0.08461538461538462,
+          "events": 130,
+          "fires": 17
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.4,
+          "recall": 0.041237113402061855,
+          "events": 97,
+          "fires": 10
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.2222222222222222,
+          "recall": 0.2222222222222222,
+          "events": 9,
+          "fires": 9
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.6,
+          "recall": 0.21428571428571427,
+          "events": 28,
+          "fires": 10
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4166666666666667,
+          "recall": 0.12987012987012986,
+          "events": 154,
+          "fires": 48
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.6,
+          "recall": 0.03333333333333333,
+          "events": 90,
+          "fires": 5
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.8571428571428571,
+          "recall": 0.25,
+          "events": 24,
+          "fires": 7
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.42857142857142855,
+          "recall": 0.08108108108108109,
+          "events": 37,
+          "fires": 7
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.11363636363636363,
+          "recall": 0.43478260869565216,
+          "events": 23,
+          "fires": 88
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.5,
+          "recall": 0.06896551724137931,
+          "events": 29,
+          "fires": 4
+        },
+        {
+          "channel": "loya",
+          "precision": 0.2,
+          "recall": 0.07692307692307693,
+          "events": 13,
+          "fires": 5
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.16,
+          "recall": 0.8,
+          "events": 5,
+          "fires": 25
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.4666666666666667,
+          "recall": 0.12962962962962962,
+          "events": 54,
+          "fires": 15
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2894736842105263,
+          "recall": 0.07801418439716312,
+          "events": 141,
+          "fires": 38
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0,
+          "recall": 0,
+          "events": 11,
+          "fires": 5
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.8,
+          "recall": 0.23529411764705882,
+          "events": 17,
+          "fires": 5
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.3333333333333333,
+          "recall": 0.1276595744680851,
+          "events": 47,
+          "fires": 18
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.55,
+          "recall": 0.20754716981132076,
+          "events": 53,
+          "fires": 20
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.3333333333333333,
+          "recall": 0.06521739130434782,
+          "events": 46,
+          "fires": 9
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.4444444444444444,
+          "recall": 0.07017543859649122,
+          "events": 57,
+          "fires": 9
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0,
+          "recall": 0,
+          "events": 32,
+          "fires": 4
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 1,
+          "recall": 0.09523809523809523,
+          "events": 21,
+          "fires": 2
+        }
+      ]
+    },
+    "rolling3": {
+      "precision": 0.37267854247495974,
+      "recall": 0.1443315098980132,
+      "weightedRecall": 0.16928401072854346,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2817818127661715,
+        "hi": 0.4712798151783119,
+        "n": 23
+      },
+      "pooledPrecision": 0.3492957746478873,
+      "firesPerHour": 2.968445757114972,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 1.0234056666350801,
+        "hi": 5.027055332518764,
+        "ratio": 4.912084715191715
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 7
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.6818181818181818,
+          "recall": 0.11538461538461539,
+          "events": 130,
+          "fires": 22
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.34782608695652173,
+          "recall": 0.08247422680412371,
+          "events": 97,
+          "fires": 23
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.1875,
+          "recall": 0.3333333333333333,
+          "events": 9,
+          "fires": 16
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.6,
+          "recall": 0.21428571428571427,
+          "events": 28,
+          "fires": 10
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.3870967741935484,
+          "recall": 0.07792207792207792,
+          "events": 154,
+          "fires": 31
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.35,
+          "recall": 0.07777777777777778,
+          "events": 90,
+          "fires": 20
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.7142857142857143,
+          "recall": 0.20833333333333334,
+          "events": 24,
+          "fires": 7
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.22727272727272727,
+          "recall": 0.13513513513513514,
+          "events": 37,
+          "fires": 22
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.21739130434782608,
+          "recall": 0.21739130434782608,
+          "events": 23,
+          "fires": 23
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.14285714285714285,
+          "recall": 0.034482758620689655,
+          "events": 29,
+          "fires": 7
+        },
+        {
+          "channel": "loya",
+          "precision": 0.2857142857142857,
+          "recall": 0.15384615384615385,
+          "events": 13,
+          "fires": 7
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.25,
+          "recall": 0.4,
+          "events": 5,
+          "fires": 8
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.46153846153846156,
+          "recall": 0.2222222222222222,
+          "events": 54,
+          "fires": 26
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2857142857142857,
+          "recall": 0.0425531914893617,
+          "events": 141,
+          "fires": 21
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0.07692307692307693,
+          "recall": 0.09090909090909091,
+          "events": 11,
+          "fires": 13
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.6666666666666666,
+          "recall": 0.23529411764705882,
+          "events": 17,
+          "fires": 6
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.26666666666666666,
+          "recall": 0.0851063829787234,
+          "events": 47,
+          "fires": 15
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.5714285714285714,
+          "recall": 0.1509433962264151,
+          "events": 53,
+          "fires": 14
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.3157894736842105,
+          "recall": 0.13043478260869565,
+          "events": 46,
+          "fires": 19
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.30434782608695654,
+          "recall": 0.12280701754385964,
+          "events": 57,
+          "fires": 23
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.23076923076923078,
+          "recall": 0.09375,
+          "events": 32,
+          "fires": 13
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 1,
+          "recall": 0.09523809523809523,
+          "events": 21,
+          "fires": 2
+        }
+      ]
+    },
+    "global2": {
+      "precision": 0.4298567012697447,
+      "recall": 0.11254472459620225,
+      "weightedRecall": 0.11976736421586147,
+      "channels": 23,
+      "ci": {
+        "lo": 0.3117407592407592,
+        "hi": 0.551886845039019,
+        "n": 23
+      },
+      "pooledPrecision": 0.3333333333333333,
+      "firesPerHour": 2.3345467853621322,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 0.4613807245386192,
+        "hi": 12.650517734151713,
+        "ratio": 27.418825844539196
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 2
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.6,
+          "recall": 0.046153846153846156,
+          "events": 130,
+          "fires": 10
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.5,
+          "recall": 0.020618556701030927,
+          "events": 97,
+          "fires": 4
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.25,
+          "recall": 0.1111111111111111,
+          "events": 9,
+          "fires": 4
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.5714285714285714,
+          "recall": 0.14285714285714285,
+          "events": 28,
+          "fires": 7
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4,
+          "recall": 0.07792207792207792,
+          "events": 154,
+          "fires": 30
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.5,
+          "recall": 0.022222222222222223,
+          "events": 90,
+          "fires": 4
+        },
+        {
+          "channel": "gotaga",
+          "precision": 1,
+          "recall": 0.16666666666666666,
+          "events": 24,
+          "fires": 4
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.4,
+          "recall": 0.05405405405405406,
+          "events": 37,
+          "fires": 5
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.12,
+          "recall": 0.391304347826087,
+          "events": 23,
+          "fires": 75
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.25,
+          "recall": 0.034482758620689655,
+          "events": 29,
+          "fires": 4
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.07692307692307693,
+          "events": 13,
+          "fires": 4
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.1875,
+          "recall": 0.6,
+          "events": 5,
+          "fires": 16
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.7142857142857143,
+          "recall": 0.09259259259259259,
+          "events": 54,
+          "fires": 7
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.2692307692307692,
+          "recall": 0.04964539007092199,
+          "events": 141,
+          "fires": 26
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0,
+          "recall": 0,
+          "events": 11,
+          "fires": 3
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.8,
+          "recall": 0.23529411764705882,
+          "events": 17,
+          "fires": 5
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.36363636363636365,
+          "recall": 0.0851063829787234,
+          "events": 47,
+          "fires": 11
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.6153846153846154,
+          "recall": 0.1509433962264151,
+          "events": 53,
+          "fires": 13
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.42857142857142855,
+          "recall": 0.06521739130434782,
+          "events": 46,
+          "fires": 7
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.6666666666666666,
+          "recall": 0.07017543859649122,
+          "events": 57,
+          "fires": 6
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0,
+          "recall": 0,
+          "events": 32,
+          "fires": 3
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 1,
+          "recall": 0.09523809523809523,
+          "events": 21,
+          "fires": 2
+        }
+      ]
+    },
+    "rolling2": {
+      "precision": 0.386944242286482,
+      "recall": 0.10683182976689089,
+      "weightedRecall": 0.12577485231951757,
+      "channels": 23,
+      "ci": {
+        "lo": 0.28624761498802415,
+        "hi": 0.4905457706171126,
+        "n": 23
+      },
+      "pooledPrecision": 0.36015325670498083,
+      "firesPerHour": 2.1709600917724168,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 0.6047879042419152,
+        "hi": 3.770291499389073,
+        "ratio": 6.234072263920404
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 5
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.75,
+          "recall": 0.09230769230769231,
+          "events": 130,
+          "fires": 16
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.3125,
+          "recall": 0.05154639175257732,
+          "events": 97,
+          "fires": 16
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0.15384615384615385,
+          "recall": 0.2222222222222222,
+          "events": 9,
+          "fires": 13
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.6666666666666666,
+          "recall": 0.21428571428571427,
+          "events": 28,
+          "fires": 9
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.3684210526315789,
+          "recall": 0.045454545454545456,
+          "events": 154,
+          "fires": 19
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.375,
+          "recall": 0.06666666666666667,
+          "events": 90,
+          "fires": 16
+        },
+        {
+          "channel": "gotaga",
+          "precision": 0.6666666666666666,
+          "recall": 0.08333333333333333,
+          "events": 24,
+          "fires": 3
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.26666666666666666,
+          "recall": 0.10810810810810811,
+          "events": 37,
+          "fires": 15
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.10526315789473684,
+          "recall": 0.08695652173913043,
+          "events": 23,
+          "fires": 19
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.25,
+          "recall": 0.034482758620689655,
+          "events": 29,
+          "fires": 4
+        },
+        {
+          "channel": "loya",
+          "precision": 0.25,
+          "recall": 0.07692307692307693,
+          "events": 13,
+          "fires": 4
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.3333333333333333,
+          "recall": 0.4,
+          "events": 5,
+          "fires": 6
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.6,
+          "recall": 0.2222222222222222,
+          "events": 54,
+          "fires": 20
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.35294117647058826,
+          "recall": 0.0425531914893617,
+          "events": 141,
+          "fires": 17
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0,
+          "recall": 0,
+          "events": 11,
+          "fires": 9
+        },
+        {
+          "channel": "rumathra",
+          "precision": 0.75,
+          "recall": 0.17647058823529413,
+          "events": 17,
+          "fires": 4
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2857142857142857,
+          "recall": 0.0851063829787234,
+          "events": 47,
+          "fires": 14
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.5555555555555556,
+          "recall": 0.09433962264150944,
+          "events": 53,
+          "fires": 9
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.35714285714285715,
+          "recall": 0.10869565217391304,
+          "events": 46,
+          "fires": 14
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.3333333333333333,
+          "recall": 0.08771929824561403,
+          "events": 57,
+          "fires": 15
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0.16666666666666666,
+          "recall": 0.0625,
+          "events": 32,
+          "fires": 12
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 1,
+          "recall": 0.09523809523809523,
+          "events": 21,
+          "fires": 2
+        }
+      ]
+    },
+    "global1": {
+      "precision": 0.44399055051228964,
+      "recall": 0.057863086277991804,
+      "weightedRecall": 0.06174487548526171,
+      "channels": 23,
+      "ci": {
+        "lo": 0.29465944683335993,
+        "hi": 0.5958592132505176,
+        "n": 23
+      },
+      "pooledPrecision": 0.32786885245901637,
+      "firesPerHour": 1.124577564628055,
+      "silentChannels": 2,
+      "rateSpread": {
+        "lo": 0,
+        "hi": 8.771025629011854,
+        "ratio": null
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 0
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.5,
+          "recall": 0.015384615384615385,
+          "events": 130,
+          "fires": 4
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.5,
+          "recall": 0.010309278350515464,
+          "events": 97,
+          "fires": 2
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0,
+          "recall": 0,
+          "events": 9,
+          "fires": 0
+        },
+        {
+          "channel": "domingo",
+          "precision": 0,
+          "recall": 0,
+          "events": 28,
+          "fires": 1
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.25,
+          "recall": 0.01948051948051948,
+          "events": 154,
+          "fires": 12
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.6666666666666666,
+          "recall": 0.022222222222222223,
+          "events": 90,
+          "fires": 3
+        },
+        {
+          "channel": "gotaga",
+          "precision": 1,
+          "recall": 0.041666666666666664,
+          "events": 24,
+          "fires": 1
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.3333333333333333,
+          "recall": 0.02702702702702703,
+          "events": 37,
+          "fires": 3
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.15384615384615385,
+          "recall": 0.34782608695652173,
+          "events": 23,
+          "fires": 52
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.6666666666666666,
+          "recall": 0.06896551724137931,
+          "events": 29,
+          "fires": 3
+        },
+        {
+          "channel": "loya",
+          "precision": 0,
+          "recall": 0,
+          "events": 13,
+          "fires": 1
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.2222222222222222,
+          "recall": 0.4,
+          "events": 5,
+          "fires": 9
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.8,
+          "recall": 0.07407407407407407,
+          "events": 54,
+          "fires": 5
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.5,
+          "recall": 0.02127659574468085,
+          "events": 141,
+          "fires": 6
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0,
+          "recall": 0,
+          "events": 11,
+          "fires": 1
+        },
+        {
+          "channel": "rumathra",
+          "precision": 1,
+          "recall": 0.058823529411764705,
+          "events": 17,
+          "fires": 1
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2857142857142857,
+          "recall": 0.0425531914893617,
+          "events": 47,
+          "fires": 7
+        },
+        {
+          "channel": "singsing",
+          "precision": 1,
+          "recall": 0.09433962264150944,
+          "events": 53,
+          "fires": 5
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.3333333333333333,
+          "recall": 0.021739130434782608,
+          "events": 46,
+          "fires": 3
+        },
+        {
+          "channel": "thetremba",
+          "precision": 1,
+          "recall": 0.017543859649122806,
+          "events": 57,
+          "fires": 1
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0,
+          "recall": 0,
+          "events": 32,
+          "fires": 1
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 1,
+          "recall": 0.047619047619047616,
+          "events": 21,
+          "fires": 1
+        }
+      ]
+    },
+    "rolling1": {
+      "precision": 0.39845191040843214,
+      "recall": 0.0473118588094034,
+      "weightedRecall": 0.05621002967366813,
+      "channels": 23,
+      "ci": {
+        "lo": 0.2619784804567413,
+        "hi": 0.5256477821695212,
+        "n": 23
+      },
+      "pooledPrecision": 0.3380281690140845,
+      "firesPerHour": 1.1700891302843837,
+      "silentChannels": 0,
+      "rateSpread": {
+        "lo": 0.17056761110584667,
+        "hi": 2.024082837464274,
+        "ratio": 11.866747879866935
+      },
+      "perChannel": [
+        {
+          "channel": "blackufa",
+          "precision": 0,
+          "recall": 0,
+          "events": 1,
+          "fires": 4
+        },
+        {
+          "channel": "bratishkinoff",
+          "precision": 0.6666666666666666,
+          "recall": 0.06153846153846154,
+          "events": 130,
+          "fires": 12
+        },
+        {
+          "channel": "cohhcarnage",
+          "precision": 0.375,
+          "recall": 0.030927835051546393,
+          "events": 97,
+          "fires": 8
+        },
+        {
+          "channel": "dmitry_bale",
+          "precision": 0,
+          "recall": 0,
+          "events": 9,
+          "fires": 6
+        },
+        {
+          "channel": "domingo",
+          "precision": 0.75,
+          "recall": 0.10714285714285714,
+          "events": 28,
+          "fires": 4
+        },
+        {
+          "channel": "elajjaz",
+          "precision": 0.4,
+          "recall": 0.025974025974025976,
+          "events": 154,
+          "fires": 10
+        },
+        {
+          "channel": "frametamer666",
+          "precision": 0.2727272727272727,
+          "recall": 0.03333333333333333,
+          "events": 90,
+          "fires": 11
+        },
+        {
+          "channel": "gotaga",
+          "precision": 1,
+          "recall": 0.041666666666666664,
+          "events": 24,
+          "fires": 1
+        },
+        {
+          "channel": "imantado",
+          "precision": 0.2,
+          "recall": 0.02702702702702703,
+          "events": 37,
+          "fires": 5
+        },
+        {
+          "channel": "kr1stw",
+          "precision": 0.08333333333333333,
+          "recall": 0.043478260869565216,
+          "events": 23,
+          "fires": 12
+        },
+        {
+          "channel": "kyedae",
+          "precision": 0.5,
+          "recall": 0.06896551724137931,
+          "events": 29,
+          "fires": 4
+        },
+        {
+          "channel": "loya",
+          "precision": 0,
+          "recall": 0,
+          "events": 13,
+          "fires": 1
+        },
+        {
+          "channel": "mobilmobil",
+          "precision": 0.3333333333333333,
+          "recall": 0.2,
+          "events": 5,
+          "fires": 3
+        },
+        {
+          "channel": "nickmercs",
+          "precision": 0.4444444444444444,
+          "recall": 0.07407407407407407,
+          "events": 54,
+          "fires": 9
+        },
+        {
+          "channel": "ohnepixel",
+          "precision": 0.25,
+          "recall": 0.014184397163120567,
+          "events": 141,
+          "fires": 8
+        },
+        {
+          "channel": "ricfazeres",
+          "precision": 0,
+          "recall": 0,
+          "events": 11,
+          "fires": 6
+        },
+        {
+          "channel": "rumathra",
+          "precision": 1,
+          "recall": 0.058823529411764705,
+          "events": 17,
+          "fires": 1
+        },
+        {
+          "channel": "sasavot",
+          "precision": 0.2222222222222222,
+          "recall": 0.0425531914893617,
+          "events": 47,
+          "fires": 9
+        },
+        {
+          "channel": "singsing",
+          "precision": 0.6666666666666666,
+          "recall": 0.07547169811320754,
+          "events": 53,
+          "fires": 6
+        },
+        {
+          "channel": "squeezie",
+          "precision": 0.6,
+          "recall": 0.06521739130434782,
+          "events": 46,
+          "fires": 5
+        },
+        {
+          "channel": "thetremba",
+          "precision": 0.4,
+          "recall": 0.07017543859649122,
+          "events": 57,
+          "fires": 10
+        },
+        {
+          "channel": "voodoosh",
+          "precision": 0,
+          "recall": 0,
+          "events": 32,
+          "fires": 6
+        },
+        {
+          "channel": "zerkaa",
+          "precision": 1,
+          "recall": 0.047619047619047616,
+          "events": 21,
+          "fires": 1
+        }
+      ]
+    }
+  }
+}

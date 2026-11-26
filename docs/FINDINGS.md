@@ -793,3 +793,87 @@ evaluation may be measuring a proxy rather than the thing. Labels now go in
 `data/human-labels.jsonl`, and compare-live.mjs stores the full feature row
 with every fire so a label collected today can be analysed later — the earlier
 exports kept only chat highlights, so those fires are lost to analysis.
+
+## Correction: the precision ceiling was an artifact of the label cap
+
+The ceiling finding above is **wrong** and is retracted here rather than
+edited away, because the mistake is instructive.
+
+I claimed a perfect detector could not beat 0.416 precision, on the grounds
+that it fires 637 times against 265 real events. Those 265 are **capped**.
+`labelChannels` defaults to `topPerHour: 6` and keeps only the top six moments
+of each block — a deliberate, documented choice that makes the target
+equal-rate across channels so precision@k asks the same question everywhere.
+I read that truncated count as the supply of real moments. It is not; it is
+the supply of moments we chose to score against.
+
+Uncapped, every channel is censored, most of them heavily:
+
+```
+                 raw ev/h   capped        raw ev/h   capped
+ohnepixel           23.25     6.93        gotaga        11.37     4.26
+elajjaz             23.20     6.18        nickmercs      8.17     2.12
+bratishkinoff       19.58     5.87        thetremba      8.59     1.21
+cohhcarnage         16.63     5.48        squeezie       6.92     0.60
+
+POOLED               9.40 ev/h  against  2.28 capped
+```
+
+So the conclusion inverts. The detector fires ~6.4/hour against ~9.4 real
+moments/hour: it is **under**-firing, not over-firing, and the ceiling was
+never the binding constraint. The live run agrees independently —
+theburntpeanut produced 21 clip events an hour while the detectors fired 3.75
+and 6.76.
+
+### What the uncapped benchmark says
+
+```
+scorer              precision          95% CI    recall
+random                  0.240    [0.20, 0.29]     0.213
+currentHeuristic        0.353    [0.28, 0.43]     0.281
+logregRateConv          0.347    [0.27, 0.42]     0.286
+online                  0.381    [0.29, 0.47]     0.253
+chance                  0.251
+```
+
+Both framings are legitimate and they answer different questions:
+
+```
+                      chance   online   ratio   question
+capped (top 6/hour)    0.041    0.165    2.2x   find the BEST moments
+uncapped (any press)   0.251    0.381    1.6x   find ANY clipped moment
+```
+
+The capped benchmark is the harder and more product-relevant one — nobody
+wants every moment anyone ever clipped, they want the good ones — and it is
+far more discriminating, since uncapped leaves only 0.75 of headroom above a
+0.25 floor. **"2x better than chance" is a claim about the capped benchmark
+and must be quoted with its denominator.**
+
+### A second thing the cap was hiding
+
+Self-calibration's precision gain largely does not survive uncapping:
+
+```
+                 capped pooled      uncapped pooled     rate spread
+global 6/hour            0.110                0.340     30.9x
+rolling 6/hour           0.132                0.342      8.9x
+```
+
+The capped labels manufactured scarcity on busy channels — kr1stw's 118 fires
+looked catastrophic against a 0.34/hour capped label rate, and sit against a
+3.88/hour raw one. Taking fires away from those channels therefore looked like
+a large win and mostly was not.
+
+What does survive is the rate spread: 30.9x to 8.9x. That is operationally
+real — predictable per-channel volume and cost — and it is a weaker claim than
+the one made above. The firing rate still tracks chat volume rather than
+moment density, and that diagnosis is unaffected.
+
+### What still stands
+
+The paired test against lowering the fire rate (measured consistently inside
+one labelling scheme, so the comparison holds), the latency and capacity
+numbers, the model being statistically indistinguishable from the heuristic in
+*both* framings, and the live-run infrastructure. What dies is the ceiling
+argument and every inference drawn from it.
