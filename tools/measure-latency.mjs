@@ -19,12 +19,16 @@
  * Usage: node tools/measure-latency.mjs [channel]
  */
 
+import { readFileSync } from 'node:fs';
 import { recordedChannels, recordedSpan, readRange } from '../src/chatlog.mjs';
 import { loadModel, scorerFor } from '../src/score.mjs';
 import { OnlineDetector } from '../src/online.mjs';
 
 const CHAT_DIR = 'data/chat';
-const only = process.argv[2];
+const only = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : null;
+
+/** The detector's own tick interval; the harness drives it at the same rate. */
+const TICK_MS = 1000;
 
 let model;
 try { model = loadModel(); } catch (e) { console.error(e.message); process.exit(1); }
@@ -38,33 +42,67 @@ const compute = [];
 const decision = [];
 let ticks = 0, fires = 0, hours = 0;
 
+/**
+ * Self-calibration is part of the shipped detector, so it is part of the cost.
+ * `--no-calibrate` measures the old fixed-threshold path for comparison.
+ */
+const AUTO = process.argv.includes('--no-calibrate')
+  ? null
+  : (JSON.parse(readFileSync('data/model.json', 'utf8')).online?.autoCalibrate ?? null);
+let calibrations = 0;
+const solves = [];
+/** Per-channel cost, because a dead channel and a 20k-message one are not the
+ *  same tenant and a fleet average over both would size nothing correctly. */
+const perChannel = [];
+
 for (const ch of channels) {
   const span = recordedSpan(CHAT_DIR, ch);
   if (!span) continue;
   const { messages } = readRange(CHAT_DIR, ch, span.startMs, span.endMs);
   if (messages.length < 500) continue;
 
-  const det = new OnlineDetector(score, threshold);
-  for (const m of messages) {
+  // Measure the detector as it actually ships, in two respects.
+  //
+  // The once-a-minute threshold solve is real work on the same core, so it is
+  // timed inside the tick that triggers it rather than excused as "amortised".
+  //
+  // And the clock drives the ticks, not message arrival. Replaying
+  // message-driven made the max decision latency 27.2s against 18.8s here,
+  // because a quiet stretch has no arrival to expire an armed settle window.
+  // watch.mjs stopped working that way; a harness that still does is
+  // measuring a detector that no longer exists.
+  const det = new OnlineDetector(score, threshold, AUTO ? { autoCalibrate: AUTO } : {});
+  let next = 0, computeThisChannel = 0;
+  for (let now = messages[0].t; now <= span.endMs; now += TICK_MS) {
     const t0 = process.hrtime.bigint();
-    det.ingest(m);
-    const fired = det.tick(m.t);
+    while (next < messages.length && messages[next].t <= now) det.ingest(messages[next++]);
+    const fired = det.tick(now);
     const t1 = process.hrtime.bigint();
 
-    // Only ticks that actually did the work are a cost; the rate limiter
-    // skips most arrivals and averaging those in would understate it badly.
-    if (det.lastTick === m.t) { compute.push(Number(t1 - t0) / 1e6); ticks++; }
+    const ms = Number(t1 - t0) / 1e6;
+    compute.push(ms);
+    computeThisChannel += ms;
+    ticks++;
+    if (det.calibrations > calibrations) { calibrations = det.calibrations; solves.push(ms); }
     if (fired) { fires++; decision.push(fired.decidedAt - fired.t); }
   }
-  hours += (span.endMs - span.startMs) / 3.6e6;
+  const chHours = (span.endMs - span.startMs) / 3.6e6;
+  hours += chHours;
+  const chTicks = Math.max(1, Math.floor((span.endMs - messages[0].t) / TICK_MS));
+  perChannel.push({
+    ch, msgPerMin: messages.length / (chHours * 60),
+    msPerTick: computeThisChannel / chTicks,
+  });
 }
 
 if (!compute.length) { console.error('no recorded chat to replay'); process.exit(1); }
 compute.sort((a, b) => a - b);
 decision.sort((a, b) => a - b);
 
-console.log(`replayed ${channels.length} channels, ${ticks.toLocaleString()} scored ticks, ${fires} fires\n`);
-console.log('compute per scored tick (ms)');
+console.log(`replayed ${channels.length} channels, ${ticks.toLocaleString()} clock ticks over ` +
+  `${hours.toFixed(1)}h, ${fires} fires\n`);
+console.log('compute per tick (ms) -- every tick, quiet ones included, as a');
+console.log('running process pays for those too');
 console.log(`  p50 ${pct(compute, 0.50).toFixed(2)}   p90 ${pct(compute, 0.90).toFixed(2)}` +
   `   p99 ${pct(compute, 0.99).toFixed(2)}   max ${compute[compute.length - 1].toFixed(2)}`);
 
@@ -74,7 +112,33 @@ if (decision.length) {
     `   max ${(decision[decision.length - 1] / 1000).toFixed(1)}`);
 }
 
-// A single process ticks each watched channel about once a second, so the
-// channel ceiling is a second of budget divided by what one tick costs.
+// A single process ticks each watched channel once a second, so the ceiling is
+// a second of budget divided by what a second of one channel costs. Mean, not
+// p99: across many channels the expensive ticks do not line up, and sizing on
+// p99 would assume they all solve their threshold in the same second.
+const mean = compute.reduce((a, b) => a + b, 0) / compute.length;
 const p99 = pct(compute, 0.99);
-console.log(`\nat p99 that is ~${Math.floor(1000 / p99)} channels per core before ticks start queueing`);
+console.log(`\nmean ${mean.toFixed(3)}ms/tick across all ${channels.length} channels`);
+
+// Capacity depends entirely on who the tenants are. A fleet average over a mix
+// that includes dead channels sizes nothing, so quote the busy end.
+perChannel.sort((a, b) => b.msPerTick - a.msPerTick);
+console.log('\ncost per channel-second, busiest first');
+for (const c of perChannel.slice(0, 5)) {
+  console.log(`  ${c.ch.padEnd(16)} ${c.msgPerMin.toFixed(0).padStart(5)} msg/min  ` +
+    `${c.msPerTick.toFixed(3)}ms/tick  -> ${Math.floor(1000 / c.msPerTick).toLocaleString()} of these per core`);
+}
+const busiest = perChannel[0];
+console.log(`\nso: ~${Math.floor(1000 / busiest.msPerTick).toLocaleString()} channels per core at the busiest ` +
+  `channel's load, ~${Math.floor(1000 / mean).toLocaleString()} at this sample's average.`);
+console.log(`the honest headline is the first one. p99 across all ticks is ${p99.toFixed(2)}ms,`);
+console.log(`but sizing on it assumes every channel has its worst second simultaneously.`);
+if (solves.length) {
+  const ss = [...solves].sort((a, b) => a - b);
+  const q = (f) => ss[Math.min(ss.length - 1, Math.floor(ss.length * f))];
+  const total = solves.reduce((a, b) => a + b, 0);
+  console.log(`\n${solves.length} threshold solves, the tick carrying one costs ` +
+    `p50 ${q(0.5).toFixed(2)}ms  p99 ${q(0.99).toFixed(2)}ms  max ${ss[ss.length - 1].toFixed(2)}ms`);
+  console.log(`they are ${(100 * total / compute.reduce((a, b) => a + b, 0)).toFixed(1)}% of all compute, ` +
+    `which is what the per-channel figure above already includes`);
+}

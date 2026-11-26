@@ -20,7 +20,7 @@ import { loadVideos } from '../src/clipstore.mjs';
 import { labelChannels } from '../src/labelled.mjs';
 import { makeLogreg, FEATURE_SETS, MODEL_FEATURES } from '../src/model.mjs';
 import { SCALES, MIN_MESSAGES } from '../src/windowrow.mjs';
-import { calibrateThreshold, DEFAULTS as ONLINE_DEFAULTS } from '../src/online.mjs';
+import { calibrateThreshold, DEFAULTS as ONLINE_DEFAULTS, CALIBRATION } from '../src/online.mjs';
 import { scorerFor } from '../src/score.mjs';
 
 const args = process.argv.slice(2);
@@ -85,11 +85,29 @@ const artifact = {
   // How to fire, not just how to score. Carried with the weights because the
   // threshold is only meaningful for the model it was measured on.
   online: {
+    // The global threshold is now the COLD-START fallback, not the operating
+    // point. A channel uses it until it has enough of its own scores to solve
+    // for one, which takes `minSpanMs`.
     threshold,
     measuredFiresPerHour: Number(firesPerHour.toFixed(2)),
     targetFiresPerHour: FIRES_PER_HOUR,
     settleMs: ONLINE_DEFAULTS.settleMs,
     refractorySec: ONLINE_DEFAULTS.refractorySec,
+    /**
+     * Each channel re-solves its own threshold against its own recent scores,
+     * holding the RATE steady rather than the threshold.
+     *
+     * Measured over 20 held-out channels at the same 6/hour: fleet precision
+     * 0.110 -> 0.132, recall 0.353 -> 0.397, rate spread 16.7x -> 4.7x. It is
+     * not the scorer improving -- per-channel precision does not move
+     * (t=-0.97) -- it is the budget going where there is something to find
+     * instead of where chat is loudest.
+     *
+     * The rate stays at 6. Lowering it was tested and rejected: the recall
+     * loss is certain (t=-3.09 at 3/hour) and the precision gain is noise
+     * (t=1.29). See docs/FINDINGS.md.
+     */
+    autoCalibrate: { ...CALIBRATION, firesPerHour: FIRES_PER_HOUR },
   },
   trainedOn: {
     channels: channels.length,

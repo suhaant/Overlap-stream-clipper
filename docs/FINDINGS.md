@@ -661,3 +661,90 @@ One caveat on the ground truth: Helix returns clips sorted by view count and
 its time-window filtering is unreliable, so 15 clips for an 8.7-hour session by
 a 37k-viewer channel may undercount. The within-run figure is a hard zero
 either way, and the ceiling argument only needs the ratio to be roughly right.
+
+## Day 5: lowering the fire rate does not work; spending it better does
+
+Suhaan's reaction to the ceiling finding was "just lower the fire rate". It is
+the obvious move and it is wrong, which only a paired test shows. Twenty
+held-out channels, each its own fold, |t| > 2.09 is p<0.05:
+
+```
+                      precision            recall
+6/hour -> 3/hour      +0.017 (t=1.29)      -0.152 (t=-3.09)
+6/hour -> 2/hour      +0.025 (t=1.18)      -0.207 (t=-4.11)
+rolling 6 -> 3        +0.030 (t=1.75)      -0.129 (t=-4.88)
+```
+
+**The recall loss clears the bar comfortably; the precision gain never comes
+close.** Firing less is a certain loss for a gain indistinguishable from noise.
+
+It is worse than break-even. Measured against the arithmetic ceiling from the
+section above, the detector reaches 28% of what is available to it at 5.6
+fires/hour and only 16% at 2.8. Firing less makes it *relatively worse* at
+using the budget it has.
+
+That resolves the ceiling finding rather than contradicting it. At 6/hour the
+budget was the binding constraint. Remove it and the constraint underneath is
+the model, and no operating point fixes that.
+
+### What did work: hold the rate per channel instead of the threshold
+
+```
+                  pooled precision    recall    rate spread
+global threshold            0.110      0.353      16.7x
+self-calibrating            0.132      0.397       4.7x
+```
+
+Same total fires, better on both axes. But the mechanism is not what the
+numbers suggest, and the distinction matters: **per-channel precision does not
+move at all** (t = -0.97). The scorer did not improve. What changed is where
+the budget goes — kr1stw stops burning 118 fires at 0.008 precision and the
+starved channels get them back. Fleet-wide that is ~20% less junk for slightly
+more recall; on any single channel you would notice nothing.
+
+This is also why pooled and mean precision disagree so sharply here, and why
+both are now recorded. The mean gives a 100-row channel the same vote as a
+20,000-row one; pooled answers "of everything this would emit, what share is
+real". For a product that runs many channels at once, pooled is the number.
+
+A fixed quantile was tried first and rejected. The quantile that yields 6
+fires/hour is no more stable across channels than the raw threshold (cv 0.088
+against 0.085 — slightly worse). A quantile is a rank over scored rows, and
+channels differ enormously in how many of those an hour holds: voodoosh needs
+its top 32% to reach 6/hour, ohnepixel its top 0.7%.
+
+So the detector solves for the rate directly: a rolling hour of its own
+`(time, score)` pairs, replayed through the real firing state machine, binary
+searched for the threshold that would have produced the target. No closed form,
+because settle and refractory collapse runs of high scores into single fires.
+It reads no labels — only scores it already computed on chat it already saw,
+which is information a live detector genuinely has.
+
+### Two corrections to earlier numbers
+
+Measuring the calibration cost meant driving the latency harness on a clock
+rather than on message arrival, as `watch.mjs` now does. Both earlier figures
+were artifacts of the old harness:
+
+**Decision latency is hard-bounded at 8.0s**, the settle window, not 18.8s.
+The old maximum came from quiet stretches having no message arrival to expire
+an armed settle window — a property of the replay, not of the detector.
+
+**Capacity is ~4,500 channels per core, not ~1,100.** The old figure divided
+one second by the p99 cost of a *scored* tick, which treats every tick as the
+expensive kind and assumes every channel has its worst second simultaneously.
+A running process ticks each channel once a second whatever chat is doing, and
+most of those ticks are nearly free:
+
+```
+ohnepixel        158 msg/min   0.221 ms/tick   -> 4,533 per core
+bratishkinoff    111 msg/min   0.212 ms/tick   -> 4,722 per core
+frametamer666     76 msg/min   0.194 ms/tick   -> 5,142 per core
+```
+
+Quoted at the busiest channel's load, which is the number that sizes a fleet.
+The sample-wide average is 12,332 and should not be quoted, because it is an
+average over channels including nearly dead ones.
+
+Self-calibration is 0.4% of all compute: 657 threshold solves, each costing
+0.42ms on the tick that carries it, against a 1,000ms tick budget.

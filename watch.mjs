@@ -29,7 +29,7 @@ const runFor = Number(argv[1] || 420);
  */
 const USE_MODEL = process.argv.includes('--model');
 
-let scoreRow = null, fireThreshold = null;
+let scoreRow = null, fireThreshold = null, autoCalibrate = null;
 if (USE_MODEL) {
   let model;
   try {
@@ -40,12 +40,17 @@ if (USE_MODEL) {
   }
   scoreRow = scorerFor(model);
   fireThreshold = model.online?.threshold;
+  autoCalibrate = model.online?.autoCalibrate ?? null;
   if (!Number.isFinite(fireThreshold)) {
     console.error('model has no calibrated firing threshold. Retrain: npm run train');
     process.exit(1);
   }
   console.log(`using the trained model: ${model.featureSet}, ${model.keys.length} features, ` +
     `fire above ${fireThreshold.toFixed(4)} (${model.online.measuredFiresPerHour}/hour when measured)`);
+  if (autoCalibrate) {
+    console.log(`self-calibrating to ${autoCalibrate.firesPerHour}/hour per channel after ` +
+      `${autoCalibrate.minSpanMs / 60_000} minutes; that threshold is the cold-start fallback`);
+  }
 }
 
 /** The moment is in the past by the time chat finishes reacting; let the buffer catch up. */
@@ -135,8 +140,9 @@ for (const ch of channels) {
   };
 
   if (USE_MODEL) {
-    const det = new OnlineDetector(scoreRow, fireThreshold);
+    const det = new OnlineDetector(scoreRow, fireThreshold, autoCalibrate ? { autoCalibrate } : {});
     const recent = [];
+    let announced = 0;
 
     /**
      * Ingest on arrival, decide on a clock.
@@ -162,6 +168,14 @@ for (const ch of channels) {
 
     const ticker = setInterval(() => {
       const fired = det.tick(twitchNow());
+      // Surface the first solve and then every tenth: a threshold that moves
+      // on its own is the kind of thing you want to see happening, not infer
+      // afterwards from the fire rate.
+      if (det.calibrations > announced && (announced === 0 || det.calibrations % 10 === 0)) {
+        announced = det.calibrations;
+        console.log(`[${ch}] calibrated to ${det.threshold.toFixed(4)} ` +
+          `(from ${det.history.length} of its own scores)`);
+      }
       if (!fired) return;
       const cand = toCandidate(fired);
       const window = recent.filter(x => x.t >= cand.onsetAt - 2000 && x.t <= cand.peakAt + 5000);

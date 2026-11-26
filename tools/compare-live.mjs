@@ -29,6 +29,9 @@ import { classify } from '../src/classify.mjs';
 
 const channel = (process.argv[2] || 'zackrawrr').toLowerCase();
 const runForSec = Number(process.argv[3] || 1800);
+/** --rate N overrides the model's target, for trying an operating point live. */
+const rateArg = process.argv.indexOf('--rate');
+const rateOverride = rateArg >= 0 ? Number(process.argv[rateArg + 1]) : null;
 
 /** Two fires are "the same moment" if their peaks land this close together. */
 const AGREE_MS = 10_000;
@@ -98,7 +101,14 @@ const chat = new TwitchChat(channel).connect();
 chat.on('error', () => {});
 
 // ---- the model's own causal rule -------------------------------------------
-const online = new OnlineDetector(scoreRow, threshold);
+const autoCalibrate = model.online?.autoCalibrate
+  ? { ...model.online.autoCalibrate, ...(rateOverride ? { firesPerHour: rateOverride } : {}) }
+  : null;
+if (autoCalibrate) {
+  console.log(`self-calibrating  ${autoCalibrate.firesPerHour}/hour per channel, ` +
+    `after ${autoCalibrate.minSpanMs / 60_000}min of its own scores\n`);
+}
+const online = new OnlineDetector(scoreRow, threshold, autoCalibrate ? { autoCalibrate } : {});
 
 // ---- the hand-written spike detector ---------------------------------------
 const spikes = new SpikeDetector().start();
@@ -165,6 +175,10 @@ function report() {
   console.log(`model fired      ${String(d.model.length).padStart(3)}   ${per(d.model.length)}/hour  (calibrated for ${model.online.targetFiresPerHour})`);
   console.log(`heuristic fired  ${String(d.heuristic.length).padStart(3)}   ${per(d.heuristic.length)}/hour  (+${rejected} rejected by the shape gate)`);
   console.log(`chat clock skew  ${(skewMs / 1000).toFixed(1)}s against ours at the end`);
+  if (autoCalibrate) {
+    console.log(`recalibrated     ${online.calibrations} times, ending at ` +
+      `${online.threshold.toFixed(4)} (fallback was ${threshold.toFixed(4)})`);
+  }
   console.log(`both agreed on   ${String(d.agreed.length).padStart(3)}   within ${AGREE_MS / 1000}s`);
   console.log(`model only       ${String(d.modelOnly.length).padStart(3)}`);
   console.log(`heuristic only   ${String(d.heuristicOnly.length).padStart(3)}`);
@@ -186,7 +200,8 @@ function report() {
   writeFileSync(out, JSON.stringify({
     channel, startedAt, endedAt: Date.now(), hours: Number(hours.toFixed(3)),
     messages: stats.messages, ticks: stats.ticks, chatClockSkewMs: skewMs,
-    model: { featureSet: model.featureSet, threshold, inSample: Boolean(model.trainedOn.channelNames?.includes(channel)) },
+    model: { featureSet: model.featureSet, threshold, endThreshold: online.threshold,
+      calibrations: online.calibrations, autoCalibrate, inSample: Boolean(model.trainedOn.channelNames?.includes(channel)) },
     counts: {
       model: d.model.length, heuristic: d.heuristic.length, heuristicRejected: rejected,
       agreed: d.agreed.length, modelOnly: d.modelOnly.length, heuristicOnly: d.heuristicOnly.length,
