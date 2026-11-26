@@ -748,3 +748,48 @@ average over channels including nearly dead ones.
 
 Self-calibration is 0.4% of all compute: 657 threshold solves, each costing
 0.42ms on the tick that carries it, against a 1,000ms tick budget.
+
+### Four human labels, and what they expose
+
+Suhaan watched the four fires from the theburntpeanut run and called two good:
+
+```
+24:47  0.8275  gg x10 | o7 x9 | welp x5            GOOD   heuristic agreed
+20:56  0.8149  Lol x7 | CLIP FARMING x7 | LUL x4   bad    heuristic agreed
+16:14  0.7368  Lol x11 | LUL LUL LUL x6 | HOW x5   GOOD   model only
+11:49  0.7561  YES x5 | No x3 | Wait x3 | SAVE x2  bad    model only
+```
+
+Nothing the system currently knows separates them:
+
+```
+mean model score   good 0.7822   bad 0.7855
+heuristic agreed   good 1 of 2   bad 1 of 2
+```
+
+The distinction he is making is **semantic**, and the shipped model is blind to
+semantics by construction. `rateAndConvergence` is fifteen features: message
+and chatter rates, mean length, repetition, diversity, top-token share. Volume
+and shape. Not one of them knows what a word means.
+
+So "CLIP FARMING" — chat being cynical about a moment they think was staged —
+is indistinguishable from "LUL LUL LUL". Both are a burst of short repeated
+messages from many people. "YES / No / Wait / SAVE" is chat arguing about a
+decision, which has the same volume signature as chat reacting to an event.
+
+The lexicon features exist (`clipRequest`, `reactionWords`, `screaming`,
+`conversational` and the rest live in features.mjs and in SHARE_FEATURES) and
+they were tested: `logregShares` scores 0.111 against `logregRate`'s 0.134.
+Words made it worse, so the shipped set drops them.
+
+**But that was measured against the clip button, and the clip button is not
+what Suhaan is judging.** The benchmark asks "did a viewer press clip". He is
+asking "is this watchable". Those targets can come apart, and the lexicon
+failing at the first says nothing about the second. Nobody has tested the
+second, because until now the project had no human labels at all.
+
+n=4 is not a finding. It is a reason to start collecting, and a reason the
+evaluation may be measuring a proxy rather than the thing. Labels now go in
+`data/human-labels.jsonl`, and compare-live.mjs stores the full feature row
+with every fire so a label collected today can be analysed later — the earlier
+exports kept only chat highlights, so those fires are lost to analysis.

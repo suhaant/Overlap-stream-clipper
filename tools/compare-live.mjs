@@ -25,6 +25,7 @@ import { SpikeDetector } from '../src/detector.mjs';
 import { OnlineDetector, toCandidate } from '../src/online.mjs';
 import { loadModel, scorerFor } from '../src/score.mjs';
 import { chatHighlights } from '../src/caption.mjs';
+import { buildRow } from '../src/windowrow.mjs';
 import { classify } from '../src/classify.mjs';
 
 const channel = (process.argv[2] || 'zackrawrr').toLowerCase();
@@ -86,10 +87,20 @@ const record = (source, cand, detail) => {
   const window = windowAround(cand);
   const lines = chatHighlights(window);
   const cls = classify(window);
+  /**
+   * The full feature row at the peak, not just the ones the model reads.
+   *
+   * Suhaan labelled four fires good/bad and neither the model score (0.7822
+   * against 0.7855) nor heuristic agreement (1/2 against 1/2) separated them.
+   * Working out what would requires the features, and the earlier exports kept
+   * only the chat highlights, so those four fires can never be re-analysed.
+   * Keeping the row makes a label worth something later.
+   */
+  const row = online.messages.length ? buildRow(online.messages, cand.peakAt) : null;
   const entry = {
     source, peakAt: cand.peakAt, rel: rel(cand.peakAt),
     kind: cls.kind, chatters: new Set(window.map(m => m.user)).size,
-    detail, lines,
+    detail, lines, row,
   };
   fires.push(entry);
   const tag = source === 'model' ? 'MODEL    ' : 'HEURISTIC';
