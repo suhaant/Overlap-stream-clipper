@@ -22,7 +22,8 @@
     "train": "node tools/train.mjs",
     "measure-latency": "node tools/measure-latency.mjs",
     "refresh": "npm run live-windows && npm run harvest -- --days 3 && npm run build-dataset && npm run evaluate",
-    "compare-live": "node tools/compare-live.mjs"
+    "compare-live": "node tools/compare-live.mjs",
+    "ceiling": "node tools/precision-ceiling.mjs"
   },
   "engines": {
     "node": ">=22"

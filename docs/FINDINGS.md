@@ -597,3 +597,67 @@ Second honest note: it clipped a cutscene. Chat-only detection cannot tell
 whether the funny thing was *visible* or merely audible in the streamer's
 commentary. Here it happened to be on screen. Nothing in the signal guaranteed
 that, and nothing in the signal ever will.
+
+### The clip was a false positive, and checking it found the real problem
+
+Showed the clip to Suhaan, who said it was not a clip-worthy moment. He was
+right, and the clip button agrees: **zackrawrr produced zero clips during the
+entire 30-minute run.** Fifteen clips over the 8.7-hour session, the last one
+27 minutes before the run started, none inside it. All four fires — one model,
+three heuristic — were false positives against the project's own ground truth.
+
+That was the expected outcome of showing one fire. Measured online precision is
+0.165, so roughly one fire in six is a real moment. Presenting the first clip
+that came out as *the* result was the wrong way to demo a probabilistic
+detector; the right unit is a reel of several fires, or the subset that hit.
+
+Checking it properly turned up something larger. zackrawrr's viewers press clip
+**1.72 times per hour**. The detector is calibrated to fire **6 times per
+hour**. Pooled across the benchmark, 637 fires against 265 labelled events:
+
+```
+labelled events   265
+fires             637
+precision ceiling 0.416     <- a PERFECT detector cannot beat this
+measured          0.165     <- 40% of what is achievable, not 16% of 1.0
+```
+
+The detector fires 2.4× more often than moments happen, so most fires cannot be
+moments no matter how good the scorer is. Per channel the ceiling collapses
+entirely:
+
+```
+channel         events/h   fires/h   ceiling   actual
+cohhcarnage         5.31      5.14     1.000    0.133
+bratishkinoff       5.57      6.17     0.902    0.293
+kyedae              1.66      2.12     0.786    0.357
+ohnepixel           6.10      9.73     0.627    0.068
+elajjaz             6.18     11.00     0.562    0.096
+squeezie            0.60      3.01     0.200    0.050
+thetremba           1.21      6.93     0.174    0.022
+ricfazeres          0.20      3.46     0.059    0.059   <- at its ceiling
+kr1stw              0.34     19.90     0.017    0.008   <- 58 fires per moment
+```
+
+On kr1stw the benchmark is measuring almost nothing: the detector is required
+to emit 58 fires for every real moment, so its precision is pinned near zero by
+arithmetic before the scorer is consulted. ricfazeres sits exactly on its
+ceiling — it is already as good as the fire budget permits.
+
+And the budget is spent in the wrong places (Spearman, n=20, critical ρ≈0.45):
+
+```
+fires/hour vs chat volume        +0.568   significant
+fires/hour vs real moment rate   +0.298   NOT significant
+```
+
+**The detector spends its firing budget where chat is loud, not where moments
+are.** That is the one-line diagnosis, it explains the cutscene clip exactly,
+and it makes the per-channel operating point the next piece of work rather than
+a nicety — with a target that tracks each channel's own observed press rate
+instead of a global 6/hour.
+
+One caveat on the ground truth: Helix returns clips sorted by view count and
+its time-window filtering is unreliable, so 15 clips for an 8.7-hour session by
+a 37k-viewer channel may undercount. The within-run figure is a hard zero
+either way, and the ceiling argument only needs the ratio to be roughly right.
